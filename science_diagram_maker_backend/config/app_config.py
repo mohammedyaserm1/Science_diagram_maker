@@ -12,3 +12,9 @@ class AppConfig:
     GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
     FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
     DATA_DIR = BASE_DIR / "data"
+    CONCEPTS_FILE = DATA_DIR / "concepts.json"
+    RESULTS_FILE = DATA_DIR / "results.json"
+    SVG_WIDTH = 800
+    SVG_HEIGHT = 500
+    GEMINI_TEMPERATURE = 0.2
+    GEMINI_MAX_OUTPUT_TOKENS = 8192
