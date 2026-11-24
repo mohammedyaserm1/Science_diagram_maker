@@ -1,0 +1,111 @@
+{
+    "diagrams": {
+        "1": {
+            "file": "pythagoras.svg",
+            "revision": "c1053ec6a8438f482b78557e352d9dc30f0c5707960eed01d9b778405bc412e8",
+            "validation": {
+                "passed": true,
+                "checks": [
+                    {
+                        "name": "svg_validity",
+                        "passed": true,
+                        "message": "SVG parsed successfully"
+                    },
+                    {
+                        "name": "viewbox_bounds",
+                        "passed": true,
+                        "message": "Supported shape and animation bounds fit inside the viewBox; text bounds are estimated"
+                    },
+                    {
+                        "name": "title_and_labels",
+                        "passed": true,
+                        "message": "Title and 9 text labels found"
+                    },
+                    {
+                        "name": "animation",
+                        "passed": true,
+                        "message": "Found 1 valid SMIL animations"
+                    },
+                    {
+                        "name": "security",
+                        "passed": true,
+                        "message": "SVG follows the supported safe element and attribute profile"
+                    }
+                ]
+            }
+        },
+        "2": {
+            "file": "circle.svg",
+            "revision": "860b911ff49688b3a7bae690172f62a8ddc7cdc64c85bf2cad8359dece4dfb0f",
+            "validation": {
+                "passed": true,
+                "checks": [
+                    {
+                        "name": "svg_validity",
+                        "passed": true,
+                        "message": "SVG parsed successfully"
+                    },
+                    {
+                        "name": "viewbox_bounds",
+                        "passed": true,
+                        "message": "Supported shape and animation bounds fit inside the viewBox; text bounds are estimated"
+                    },
+                    {
+                        "name": "title_and_labels",
+                        "passed": true,
+                        "message": "Title and 8 text labels found"
+                    },
+                    {
+                        "name": "animation",
+                        "passed": true,
+                        "message": "Found 1 valid SMIL animations"
+                    },
+                    {
+                        "name": "security",
+                        "passed": true,
+                        "message": "SVG follows the supported safe element and attribute profile"
+                    }
+                ]
+            }
+        },
+        "3": {
+            "file": "series_circuit.svg",
+            "revision": "a5d3981382185672c5a902c894c4e0126ec9f15388b33686dc1d4309dcd8c8f7",
+            "validation": {
+                "passed": true,
+                "checks": [
+                    {
+                        "name": "svg_validity",
+                        "passed": true,
+                        "message": "SVG parsed successfully"
+                    },
+                    {
+                        "name": "viewbox_bounds",
+                        "passed": true,
+                        "message": "Supported shape and animation bounds fit inside the viewBox; text bounds are estimated"
+                    },
+                    {
+                        "name": "title_and_labels",
+                        "passed": true,
+                        "message": "Title and 9 text labels found"
+                    },
+                    {
+                        "name": "animation",
+                        "passed": true,
+                        "message": "Found 10 valid SMIL animations"
+                    },
+                    {
+                        "name": "security",
+                        "passed": true,
+                        "message": "SVG follows the supported safe element and attribute profile"
+                    }
+                ]
+            },
+            "replaces_generated_at": "2026-11-24T13:28:40.372623+00:00"
+        }
+    },
+    "reviewed_gemini_revisions": {
+        "4": "2026-11-24T13:34:17.166114+00:00",
+        "5": "2026-11-24T13:53:23.830257+00:00"
+    }
+}

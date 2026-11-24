@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500">
+  <title>Series circuit with one cell and two resistors</title>
+  <rect x="1" y="1" width="798" height="498" fill="#f8fafc"/>
+  <text x="400" y="60" text-anchor="middle" font-family="monospace" font-size="24" font-weight="bold" fill="#0f172a">Series circuit</text>
+  <text x="400" y="93" text-anchor="middle" font-family="monospace" font-size="16" fill="#334155">Current is the same everywhere.</text>
+  <polyline points="240,150 130,150 130,330 266,330" fill="none" stroke="#15645d" stroke-width="4"/>
+  <line x1="310" y1="150" x2="435" y2="150" stroke="#15645d" stroke-width="4"/>
+  <polyline points="505,150 635,150 635,330 295,330" fill="none" stroke="#15645d" stroke-width="4"/>
+  <rect x="240" y="132" width="70" height="36" fill="#ffffff" stroke="#15645d" stroke-width="4"/>
+  <rect x="435" y="132" width="70" height="36" fill="#ffffff" stroke="#15645d" stroke-width="4"/>
+  <line x1="266" y1="302" x2="266" y2="358" stroke="#0f172a" stroke-width="5"/>
+  <line x1="295" y1="314" x2="295" y2="346" stroke="#0f172a" stroke-width="5"/>
+  <text x="275" y="157" text-anchor="middle" font-family="monospace" font-size="18" font-weight="bold" fill="#0f172a">V₁</text>
+  <text x="470" y="157" text-anchor="middle" font-family="monospace" font-size="18" font-weight="bold" fill="#0f172a">V₂</text>
+  <text x="245" y="369" text-anchor="middle" font-family="monospace" font-size="19" font-weight="bold" fill="#0f172a">+</text>
+  <text x="316" y="369" text-anchor="middle" font-family="monospace" font-size="19" font-weight="bold" fill="#0f172a">−</text>
+  <text x="281" y="389" text-anchor="middle" font-family="monospace" font-size="16" fill="#334155">Cell</text>
+  <circle cx="238" cy="330" r="6" fill="#d97706">
+    <animate attributeName="cx" from="238" to="168" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0;1;1;0" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="130" cy="282" r="6" fill="#d97706">
+    <animate attributeName="cy" from="282" to="212" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0;1;1;0" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="340" cy="150" r="6" fill="#d97706">
+    <animate attributeName="cx" from="340" to="410" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0;1;1;0" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="635" cy="188" r="6" fill="#d97706">
+    <animate attributeName="cy" from="188" to="258" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0;1;1;0" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="530" cy="330" r="6" fill="#d97706">
+    <animate attributeName="cx" from="530" to="460" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0;1;1;0" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <text x="400" y="429" text-anchor="middle" font-family="monospace" font-size="18" font-weight="bold" fill="#0f172a">Cell voltage = V₁ + V₂</text>
+  <text x="400" y="456" text-anchor="middle" font-family="monospace" font-size="15" fill="#334155">The resistors share the supply voltage.</text>
+</svg>

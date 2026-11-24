@@ -56,11 +56,11 @@ function TokenUsage({ usage }) {
     );
 }
 
-export default function DiagramRow({ diagram, generation, review, onReview, onGenerate }) {
-    const status = diagram.passed ? 'Passed' : diagram.validation ? 'Failed' : 'Not generated';
+export default function DiagramRow({ diagram, preview, generation, review, onReview, onGenerate }) {
+    const result = generation?.result ?? diagram.latestFailure ?? diagram;
+    const status = result.passed ? 'Passed' : result.validation ? 'Failed' : 'Not generated';
     const tone = { Passed: 'passed', Failed: 'failed', 'Not generated': 'pending' }[status];
-    const result = generation?.result ?? diagram;
-    const error = generation?.error ?? diagram.error;
+    const error = generation?.error ?? result.error;
     return (
         <tr>
             <th scope="row" data-label="Concept">
@@ -68,8 +68,24 @@ export default function DiagramRow({ diagram, generation, review, onReview, onGe
                 <span className="concept-name">{diagram.concept.name}</span>
                 <p className="concept-description">{diagram.concept.description}</p>
             </th>
-            <td data-label="Animated preview"><DiagramPreview diagram={diagram} /></td>
+            <td data-label="Animated preview">
+                <DiagramPreview diagram={preview} />
+                {preview.source === 'local' && (
+                    <>
+                        <p className="validation-caption">Local fallback · {preview.sourceReason}</p>
+                        <p className="validation-caption">SVG checks passed · Science reviewed</p>
+                    </>
+                )}
+                {preview.source === 'gemini' && (
+                    <p className="validation-caption">
+                        Gemini-generated · {preview.scientificallyReviewed ? 'Science reviewed' : 'Scientific review pending'}
+                    </p>
+                )}
+            </td>
             <td data-label="Validation">
+                {preview.source === 'local' && (
+                    <p className="validation-caption">Gemini generation</p>
+                )}
                 <span className={`badge ${tone}`}>{status}</span>
                 {generation?.result && (
                     <p className="validation-caption">Latest attempt</p>

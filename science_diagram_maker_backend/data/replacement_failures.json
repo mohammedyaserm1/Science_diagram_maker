@@ -1,0 +1,62 @@
+[
+    {
+        "concept": {
+            "id": 3,
+            "name": "Series circuit",
+            "subject": "Physics",
+            "description": "In a series circuit there is only one loop. The current is the same everywhere in the loop. The voltage of the cell is shared between the components."
+        },
+        "model_name": "gemini-3.6-flash",
+        "svg": null,
+        "passed": false,
+        "validation": {
+            "passed": false,
+            "checks": [
+                {
+                    "name": "svg_validity",
+                    "passed": false,
+                    "message": "No SVG generated"
+                },
+                {
+                    "name": "viewbox_bounds",
+                    "passed": false,
+                    "message": "No SVG generated"
+                },
+                {
+                    "name": "title_and_labels",
+                    "passed": false,
+                    "message": "No SVG generated"
+                },
+                {
+                    "name": "animation",
+                    "passed": false,
+                    "message": "No SVG generated"
+                },
+                {
+                    "name": "security",
+                    "passed": false,
+                    "message": "No SVG generated"
+                }
+            ]
+        },
+        "token_usage": {
+            "input_tokens": null,
+            "output_tokens": null,
+            "thinking_tokens": null,
+            "total_tokens": null
+        },
+        "retries": {
+            "api_retries": 3,
+            "validation_retries": 0,
+            "total_retries": 3
+        },
+        "estimated_cost_usd": null,
+        "attempts": [],
+        "generated_at": "2026-11-24T15:35:33.035675+00:00",
+        "error": "Gemini is temporarily unavailable after retries (HTTP 503). Try again later.",
+        "error_status": 503,
+        "requested_model_name": "gemini-3.6-flash",
+        "reported_model_name": null,
+        "base_generated_at": "2026-11-24T13:28:40.372623+00:00"
+    }
+]

@@ -32,6 +32,7 @@ Open the local Vite URL at `http://localhost:5173`. The backend exposes Swagger 
 | --- | --- | --- |
 | `GEMINI_API_KEY` | Backend | Server-side Gemini key. Required for generation. |
 | `GEMINI_MODEL` | Backend | Defaults to `gemini-3.5-flash`, the alternative named in the Udhi Technologies assessment. |
+| `GEMINI_API_VERSION` | Backend | Optional SDK API version override. Leave unset for the SDK default. |
 | `FRONTEND_URL` | Backend | Allowed browser origin, defaults to `http://localhost:5173`. Use the exact production origin without a trailing slash. |
 | `VITE_API_BASE_URL` | Frontend | Public API base, including `/api`. Set it before building the frontend. |
 
@@ -70,26 +71,34 @@ Live generation returns 404 for an unknown concept, 429 for an exhausted rate li
 `PromptConfig` builds common SVG system instructions from the validator's allowlist and supplies separate subject-specific drawing guidance for all five concepts. The Gemini SDK requests minimal thinking on the configured Flash model, disables automatic function calling, and retains the 60-second request timeout and 8,192-token output limit. The pipeline records the provider's finish reason for each candidate. A `MAX_TOKENS` candidate fails the SVG validity check and can use the existing correction retry.
 
 1. **SVG validity** parses XML with DefusedXML and checks the SVG root and namespace.
-2. **ViewBox bounds** checks supported geometry, stroke padding, estimated text extents and the endpoints of circle animation.
+2. **ViewBox bounds** checks supported geometry, stroke padding, estimated text extents and the endpoints of circle animation. Line bounds account for butt, round and square caps, including diagonal and zero-length lines. Polygon and polyline stroke bounds use conservative padding for default joins and permitted caps.
 3. **Title and labels** requires a non-empty title and at least three non-empty visible text labels.
 4. **Animation** checks SMIL targets, duration, repeat count, and changing values.
-5. **Security** uses element and attribute allowlists and rejects external resources, scripts, event handlers, unsupported nesting, and XML processing instructions.
+5. **Security** uses element and attribute allowlists and rejects external resources, scripts, event handlers, unsupported nesting, and XML processing instructions. It accepts only `butt`, `round` and `square` for `stroke-linecap` and retains the default line join.
 
 Failed validation triggers one correction request with check feedback. HTTP 429 and 503 share a budget of three API retries across both validation attempts, with delays of 5, 10 and 20 seconds. The SDK’s built-in retries are disabled so the logged counts reflect the app’s policy. Attempts with usable token metadata contribute to the estimate even when their SVG fails.
 
-The estimate multiplies input, output and reported thinking tokens by Gemini’s standard paid-tier rates. Gemini 3.5 Flash-Lite uses $0.30 per million input tokens and $2.50 per million output or thinking tokens. Gemini 3.5 Flash uses $1.50 and $9.00 respectively. Gemini 3.1 Flash-Lite uses $0.25 and $1.50. These figures show the paid-tier equivalent in USD. Free-tier requests incur no usage charge. Unavailable pricing or required token counts leave the cost unavailable. [Google Gemini API pricing](https://ai.google.dev/gemini-api/docs/pricing)
+Locally, rejected nonempty responses within the SVG size limit are stored as JSON under the backend's ignored `.svg_diagnostics/` directory. An artifact contains the raw response text, validation checks, finish reason, model, token usage and retry counts at the time of the response. API responses and dashboard previews omit the raw text. Diagnostic capture is disabled on Render.
+
+The estimate multiplies input, output and reported thinking tokens by Gemini’s standard paid-tier rates. Gemini 3.5 Flash-Lite uses $0.30 per million input tokens and $2.50 per million output or thinking tokens. Gemini 3.5 Flash uses $1.50 and $9.00 respectively. Gemini 3.1 Flash-Lite uses $0.25 and $1.50. Gemini 3.6 Flash uses $0.75 and $3.75 through 31 December 2026, then $1.50 and $7.50 from 1 January 2027. These figures show the paid-tier equivalent in USD. Free-tier requests incur no usage charge. Unavailable pricing or required token counts leave the cost unavailable. [Google Gemini API pricing](https://ai.google.dev/gemini-api/docs/pricing)
 
 ## Saved results
 
-| Concept | Saved model status | Validation | Tokens (input / output / thinking / total) | Estimated USD | Retries (API / validation / total) |
+| Concept | Displayed SVG | Latest Gemini outcome | Tokens (input / output / thinking / total) | Estimated USD | Retries (API / validation / total) |
 | --- | --- | --- | --- | ---: | --- |
-| Pythagoras' theorem | Requested 3.5 Flash, reported 3.6 Flash | Failed SVG allowlist, then correction timed out | 628 / 2,095 / — / 2,723 | — | 2 / 1 / 3 |
-| Parts of a circle | Requested 3.5 Flash | Never reached after connection failure | — / — / — / — | — | 0 / 0 / 0 |
-| Series circuit | 3.5 Flash-Lite | Passed | 718 / 1,282 / — / 2,000 | $0.00342040 | 0 / 0 / 0 |
-| Photosynthesis | 3.5 Flash-Lite | Passed | 809 / 1,262 / — / 2,071 | $0.00339770 | 0 / 0 / 0 |
-| States of matter | 3.5 Flash-Lite | Passed | 823 / 4,350 / — / 5,173 | $0.01112190 | 0 / 0 / 0 |
+| Pythagoras' theorem | Local fallback | Requested 3.6 Flash, HTTP 503 then 504 | — / — / — / — | — | 1 / 0 / 1 |
+| Parts of a circle | Local fallback | Requested 3.6 Flash, HTTP 503 retry limit reached | — / — / — / — | — | 3 / 0 / 3 |
+| Series circuit | Local fallback | Requested 3.6 Flash, HTTP 429 then repeated 503 | — / — / — / — | — | 3 / 0 / 3 |
+| Photosynthesis | Gemini 3.5 Flash-Lite | Passed | 809 / 1,262 / — / 2,071 | $0.00339770 | 0 / 0 / 0 |
+| States of matter | Gemini 3.5 Flash-Lite | Passed | 823 / 4,350 / — / 5,173 | $0.01112190 | 0 / 0 / 0 |
 
-A dash indicates unavailable token or pricing data. New results record the requested model and the model reported by Gemini separately. The cost estimate uses the reported model and is unavailable when that model or its price is unknown. The three saved SVGs animate in the browser. Photosynthesis correctly labels the inputs, products and light. States of matter shows the relative spacing and motion of particles. The saved Series circuit still needs the scientific corrections described below.
+A dash indicates unavailable token or pricing data. The three failed requests returned no SVG, reported model or usage metadata. New results record the requested and reported models separately, and estimates use the reported model. All five shown SVGs were reviewed visually and animate in the browser.
+
+### Local fallback previews
+
+The dashboard bundles three hand-authored SVGs in `data/fallback/` with their own automated checks and review labels. Pythagoras uses a 180 × 240 × 300 triangle, a right-angle marker, and the numerical example. Circle uses a 130-unit radius and a 260-unit diameter through the centre. Series circuit uses one cell and two resistors in one loop. Each animated marker stays on a straight wire segment, and the captions explain current and voltage sharing. The two previously reviewed Gemini previews still show photosynthesis inputs, products and light, and the relative spacing and motion of particles in each state.
+
+The fallback previews retain the five-diagram display and animation objective. Three concepts still need Gemini-generated replacements to fully meet the AI-generation requirement. The genuine Series circuit SVG and its original metrics remain in `results.json`. The later failed replacement is in `replacement_failures.json`, and the dashboard displays that attempt's Gemini status and retries. Clicking Generate still runs the real Gemini pipeline. Validation success replaces the fallback for that session and creates a new reviewer revision.
 
 ### What failed and what changed
 
@@ -104,19 +113,25 @@ On 24 November 2026, Gemini 3.5 Flash-Lite returned HTTP 503 on the initial call
 
 I requested `gemini-3.5-flash` for concepts 1, 2 and 3 in order. Pythagoras returned HTTP 504 and Parts of a circle failed at the connection layer. Neither response supplied tokens or an SVG. For Series circuit, Gemini returned HTTP 200 and identified its response model as `gemini-3.6-flash`. The response contained malformed SVG with an unclosed XML token, and the one allowed validation retry returned HTTP 504. The run ended after the repeated gateway failures.
 
-The circuit response reported 984 input, 328 output and 7,860 thinking tokens, totaling 9,172. There were zero API retries and one validation retry. The application recorded the cost as unavailable because its pricing configuration has no rate for the reported model. Using Google's standard 3.6 Flash rates through 31 December 2026, the response has a paid-tier equivalent of $0.03144300. The request used the existing free tier. The saved circuit preview is the original Flash-Lite SVG, and the two maths concepts still have no preview to review. [Google Gemini API pricing](https://ai.google.dev/gemini-api/docs/pricing#gemini-3.6-flash)
+The circuit response reported 984 input, 328 output and 7,860 thinking tokens, totaling 9,172. There were zero API retries and one validation retry. The application recorded the cost as unavailable because its pricing configuration had no rate for the reported model at the time. Using Google's standard 3.6 Flash rates through 31 December 2026, the response has a paid-tier equivalent of $0.03144300. The request used the existing free tier. [Google Gemini API pricing](https://ai.google.dev/gemini-api/docs/pricing#gemini-3.6-flash)
 
 ### Individual generation with the revised prompts
 
 I ran Pythagoras first with a separate candidate file. After an HTTP 503, Gemini returned a complete response with finish reason `STOP`. The SVG parsed and met the title, label and animation checks, but used `stroke-linecap`, which the SVG allowlist rejects. The validator could therefore not verify its bounds. The one allowed correction encountered an HTTP 503 and then an HTTP 504. The completed run recorded two API retries and one validation retry. Its reported model was `gemini-3.6-flash`, and it reported 628 input and 2,095 output tokens. Thinking-token metadata and the configured cost estimate were unavailable.
 
-The generation sequence stopped at concept 1. The prompt now explicitly requests default stroke caps and joins. Parts of a circle and Series circuit still await replacements, and the existing Series circuit, Photosynthesis and States of matter SVGs were preserved. The previous saved failures also remain in Git. [Earlier Flash results](https://github.com/mohammedyaserm1/Science_diagram_maker/blob/bbb35bd/science_diagram_maker_backend/data/results.json)
+The generation sequence stopped at concept 1. Parts of a circle and Series circuit still await replacements, and the existing Series circuit, Photosynthesis and States of matter SVGs were preserved. The previous saved failures also remain in Git. [Earlier Flash results](https://github.com/mohammedyaserm1/Science_diagram_maker/blob/bbb35bd/science_diagram_maker_backend/data/results.json)
+
+After adding support for the three line caps, I checked the saved history and local artifacts for the earlier rejected Pythagoras SVG. Only its validation metadata was available. The single replacement run received HTTP 503 and then HTTP 504 on its first API retry. Gemini supplied no SVG, reported model or tokens, so validation and scientific review could not run. The earlier 2,723-token attempt is preserved in Git. [Earlier Pythagoras result](https://github.com/mohammedyaserm1/Science_diagram_maker/blob/798c6f0/science_diagram_maker_backend/data/results.json)
+
+The next recovery run used Gemini 3.6 Flash with minimal thinking on the SDK's `v1beta` endpoint and a 90-second timeout for that run. The existing free-tier key retrieved model metadata and confirmed `generateContent`. The installed SDK expects timeout values in milliseconds and converts them for HTTPX. The HTTP 503 and 504 responses came back from the API route, even with the longer setting. All three concepts were attempted sequentially with a ten-second gap between concepts and the existing API retry limits. The application retains its existing 60-second timeout and default model. [Google Gen AI SDK](https://googleapis.github.io/python-genai/)
+
+For a separate manual AI Studio attempt, sign into the existing free-tier project, open the Gemini 3.6 Flash playground, choose minimal thinking, then paste the system and concept prompts from `config/prompt_config.py` into their respective fields. Copy the complete response for local validation and record the model and any reported usage as an AI Studio result. [Google AI Studio playground](https://aistudio.google.com/prompts/new_chat?model=gemini-3.6-flash)
 
 ## Verify
 
 From the backend directory run `.venv\Scripts\python.exe -m pytest -q`. From the frontend directory run `npm run lint` and `npm run build`. A browser check should confirm five startup rows, animated previews, persistent decisions and notes, and preservation of an accepted preview when live generation fails.
 
-The final local check passed 70 backend tests, frontend lint and the production build. The browser showed all five saved rows and all three available animations. With Gemini mocked, the network check confirmed zero requests for local review actions and refresh, plus one targeted POST per Generate click. A failed request retained the preview and review. A successful request created a fresh review and kept the other rows unchanged.
+The latest local check passed the backend suite, frontend lint and the production build. The browser decoded all five previews and detected changing frames in each. With Gemini mocked, local review actions and refresh sent zero requests, and each Generate click sent one targeted POST. A failed request retained the fallback preview and review. A successful request created a fresh review and kept the other rows unchanged.
 
 ## Deploy on Vercel and Render
 
@@ -134,4 +149,4 @@ I would add browser-based text measurements to compare with the estimator, inclu
 
 ## AI assistance
 
-ChatGPT, through Codex, assisted with repository review, prompt changes, backend and dashboard implementation, testing, and deployment documentation. Gemini generated the saved SVGs.
+ChatGPT, through Codex, assisted with repository review, prompt changes, backend and dashboard implementation, testing, documentation, and authoring the three labelled local fallbacks. Gemini generated the SVGs identified as Gemini-generated.

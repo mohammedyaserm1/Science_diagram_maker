@@ -14,92 +14,49 @@
             "checks": [
                 {
                     "name": "svg_validity",
-                    "passed": true,
-                    "message": "SVG parsed successfully"
+                    "passed": false,
+                    "message": "No SVG generated"
                 },
                 {
                     "name": "viewbox_bounds",
                     "passed": false,
-                    "message": "Cannot verify bounds for unsupported or unsafe SVG"
+                    "message": "No SVG generated"
                 },
                 {
                     "name": "title_and_labels",
-                    "passed": true,
-                    "message": "Title and 11 text labels found"
+                    "passed": false,
+                    "message": "No SVG generated"
                 },
                 {
                     "name": "animation",
-                    "passed": true,
-                    "message": "Found 6 valid SMIL animations"
+                    "passed": false,
+                    "message": "No SVG generated"
                 },
                 {
                     "name": "security",
                     "passed": false,
-                    "message": "Unsupported or unsafe attribute: line.stroke-linecap"
+                    "message": "No SVG generated"
                 }
             ]
         },
         "token_usage": {
-            "input_tokens": 628,
-            "output_tokens": 2095,
+            "input_tokens": null,
+            "output_tokens": null,
             "thinking_tokens": null,
-            "total_tokens": 2723
+            "total_tokens": null
         },
         "retries": {
-            "api_retries": 2,
-            "validation_retries": 1,
-            "total_retries": 3
+            "api_retries": 1,
+            "validation_retries": 0,
+            "total_retries": 1
         },
         "estimated_cost_usd": null,
-        "attempts": [
-            {
-                "attempt_number": 1,
-                "token_usage": {
-                    "input_tokens": 628,
-                    "output_tokens": 2095,
-                    "thinking_tokens": null,
-                    "total_tokens": 2723
-                },
-                "validation": {
-                    "passed": false,
-                    "checks": [
-                        {
-                            "name": "svg_validity",
-                            "passed": true,
-                            "message": "SVG parsed successfully"
-                        },
-                        {
-                            "name": "viewbox_bounds",
-                            "passed": false,
-                            "message": "Cannot verify bounds for unsupported or unsafe SVG"
-                        },
-                        {
-                            "name": "title_and_labels",
-                            "passed": true,
-                            "message": "Title and 11 text labels found"
-                        },
-                        {
-                            "name": "animation",
-                            "passed": true,
-                            "message": "Found 6 valid SMIL animations"
-                        },
-                        {
-                            "name": "security",
-                            "passed": false,
-                            "message": "Unsupported or unsafe attribute: line.stroke-linecap"
-                        }
-                    ]
-                },
-                "estimated_cost_usd": null,
-                "reported_model_name": "gemini-3.6-flash",
-                "finish_reason": "STOP"
-            }
-        ],
-        "generated_at": "2026-11-24T15:07:45.263629+00:00",
+        "attempts": [],
+        "generated_at": "2026-11-24T15:32:55.669128+00:00",
         "error": "Gemini timed out (HTTP 504). Try again later.",
         "error_status": 504,
-        "requested_model_name": "gemini-3.5-flash",
-        "reported_model_name": "gemini-3.6-flash"
+        "requested_model_name": "gemini-3.6-flash",
+        "reported_model_name": null
     },
     {
         "concept": {
@@ -108,7 +65,7 @@
             "subject": "Maths",
             "description": "A circle has a centre. The radius is the distance from the centre to the edge. The diameter goes across the circle through the centre and is twice the radius. The circumference is the distance around the circle."
         },
-        "model_name": "gemini-3.5-flash",
+        "model_name": "gemini-3.6-flash",
         "svg": null,
         "passed": false,
         "validation": {
@@ -148,16 +105,16 @@
             "total_tokens": null
         },
         "retries": {
-            "api_retries": 0,
+            "api_retries": 3,
             "validation_retries": 0,
-            "total_retries": 0
+            "total_retries": 3
         },
         "estimated_cost_usd": null,
         "attempts": [],
-        "generated_at": "2026-11-24T14:38:20.815609+00:00",
-        "error": "The backend could not reach Gemini. Try again later.",
-        "error_status": 502,
-        "requested_model_name": "gemini-3.5-flash",
+        "generated_at": "2026-11-24T15:34:10.317107+00:00",
+        "error": "Gemini is temporarily unavailable after retries (HTTP 503). Try again later.",
+        "error_status": 503,
+        "requested_model_name": "gemini-3.6-flash",
         "reported_model_name": null
     },
     {

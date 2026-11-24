@@ -1,13 +1,18 @@
 import AppConfig from '../config/app_config';
 import concepts from '../../../science_diagram_maker_backend/data/concepts.json';
 import savedResults from '../../../science_diagram_maker_backend/data/results.json';
+import replacementFailures from '../../../science_diagram_maker_backend/data/replacement_failures.json';
 import { canPreview } from '../util/diagram_util';
 
 const SESSION_KEY = 'science_diagram_maker_live_v1';
 const MAX_REVIEWER_FEEDBACK_LENGTH = 2000;
-const initialDiagrams = concepts.map((concept) =>
-    savedResults.find((result) => result.concept.id === concept.id) || { concept },
-);
+const initialDiagrams = concepts.map((concept) => {
+    const diagram = savedResults.find((result) => result.concept.id === concept.id) || { concept };
+    const latestFailure = replacementFailures.find((failure) =>
+        failure.concept.id === concept.id && failure.base_generated_at === diagram.generated_at,
+    );
+    return latestFailure ? { ...diagram, latestFailure } : diagram;
+});
 
 export function getSessionDiagrams() {
     try {

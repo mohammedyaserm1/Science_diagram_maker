@@ -5,8 +5,8 @@ export default function DashboardSummary({ diagrams }) {
     const totalCost = costs.length ? costs.reduce((total, cost) => total + cost, 0) : null;
     const stats = [
         { label: 'Concepts', value: diagrams.length },
-        { label: 'Passed', value: diagrams.filter((diagram) => diagram.passed).length, tone: 'pass-text' },
-        { label: 'Failed', value: diagrams.filter((diagram) => diagram.passed === false).length, tone: 'fail-text' },
+        { label: 'Gemini passed', value: diagrams.filter((diagram) => diagram.passed).length, tone: 'pass-text' },
+        { label: 'Gemini failed', value: diagrams.filter((diagram) => diagram.passed === false).length, tone: 'fail-text' },
         { label: 'Estimated cost', value: formatCost(totalCost), detail: `${costs.length} of ${diagrams.length} recorded in USD` },
         { label: 'Total retries', value: diagrams.reduce((total, diagram) => total + (diagram.retries?.total_retries ?? 0), 0) },
     ];

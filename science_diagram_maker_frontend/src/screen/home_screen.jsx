@@ -3,6 +3,7 @@ import DashboardSummary from '../component/dashboard_summary';
 import DiagramRow from '../component/diagram_row';
 import useReviews from '../hook/use_reviews';
 import { generateDiagram, getSessionDiagrams, saveSessionDiagram } from '../service/diagram_service';
+import { getDiagramPreview } from '../service/diagram_preview_service';
 import { canPreview } from '../util/diagram_util';
 
 export default function HomeScreen() {
@@ -52,7 +53,7 @@ export default function HomeScreen() {
                     <h1>Diagram review</h1>
                     <p>Review animated diagrams for UK GCSE science and maths.</p>
                 </div>
-                <DashboardSummary diagrams={diagrams} />
+                <DashboardSummary diagrams={diagrams.map((diagram) => diagram.latestFailure ?? diagram)} />
                 {storageError && (
                     <p className="storage-error" role="alert">Browser storage is unavailable. Reviews may be lost on refresh.</p>
                 )}
@@ -76,16 +77,20 @@ export default function HomeScreen() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {diagrams.map((diagram) => (
-                                    <DiagramRow
-                                        key={diagram.concept.id}
-                                        diagram={diagram}
-                                        generation={generationByConcept[diagram.concept.id]}
-                                        review={getReview(diagram)}
-                                        onReview={(changes) => updateReview(diagram, changes)}
-                                        onGenerate={() => handleGenerate(diagram)}
-                                    />
-                                ))}
+                                {diagrams.map((diagram) => {
+                                    const preview = getDiagramPreview(diagram);
+                                    return (
+                                        <DiagramRow
+                                            key={diagram.concept.id}
+                                            diagram={diagram}
+                                            preview={preview}
+                                            generation={generationByConcept[diagram.concept.id]}
+                                            review={getReview(preview)}
+                                            onReview={(changes) => updateReview(preview, changes)}
+                                            onGenerate={() => handleGenerate(preview)}
+                                        />
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>

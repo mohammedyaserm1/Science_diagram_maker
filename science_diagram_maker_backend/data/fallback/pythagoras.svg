@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500">
+  <title>Pythagoras' theorem: a 3-4-5 right triangle</title>
+  <rect x="1" y="1" width="798" height="498" fill="#f8fafc"/>
+  <text x="400" y="62" text-anchor="middle" font-family="monospace" font-size="24" font-weight="bold" fill="#0f172a">Pythagoras' theorem</text>
+  <polygon points="130,145 130,325 370,325" fill="#dff3f1" stroke="#15645d" stroke-width="4"/>
+  <polyline points="130,302 153,302 153,325" fill="none" stroke="#15645d" stroke-width="3"/>
+  <line x1="130" y1="145" x2="370" y2="325" stroke="#b45309" stroke-width="7" stroke-linecap="round">
+    <animate attributeName="opacity" values="0.4;1;0.4" dur="3s" repeatCount="indefinite"/>
+  </line>
+  <text x="112" y="238" text-anchor="end" font-family="monospace" font-size="18" font-weight="bold" fill="#15645d">a = 3</text>
+  <text x="252" y="356" text-anchor="middle" font-family="monospace" font-size="18" font-weight="bold" fill="#15645d">b = 4</text>
+  <text x="255" y="207" text-anchor="middle" font-family="monospace" font-size="18" font-weight="bold" fill="#92400e">c = 5</text>
+  <text x="270" y="178" text-anchor="middle" font-family="monospace" font-size="15" fill="#92400e">Hypotenuse</text>
+  <rect x="425" y="151" width="315" height="166" rx="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+  <text x="582" y="197" text-anchor="middle" font-family="monospace" font-size="17" font-weight="bold" fill="#334155">Right triangle rule</text>
+  <text x="582" y="239" text-anchor="middle" font-family="monospace" font-size="22" font-weight="bold" fill="#0f172a">a² + b² = c²</text>
+  <text x="582" y="280" text-anchor="middle" font-family="monospace" font-size="18" fill="#15645d">9 + 16 = 25</text>
+  <text x="400" y="438" text-anchor="middle" font-family="monospace" font-size="16" fill="#334155">The hypotenuse is opposite the right angle.</text>
+</svg>
