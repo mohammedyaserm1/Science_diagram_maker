@@ -1,3 +1,4 @@
+from math import hypot
 from xml.etree.ElementTree import Element
 from util.svg_util import SvgUtil
 
@@ -51,12 +52,33 @@ class SvgBoundsUtil:
         return cx - rx, cy - ry, cx + rx, cy + ry
 
     @staticmethod
-    def get_line_bounds(element: Element) -> tuple:
+    def get_line_bounds(element: Element, stroke_width: float = 0) -> tuple:
         x1 = SvgUtil.get_number(element, "x1", 0)
         y1 = SvgUtil.get_number(element, "y1", 0)
         x2 = SvgUtil.get_number(element, "x2", 0)
         y2 = SvgUtil.get_number(element, "y2", 0)
-        return min(x1, x2), min(y1, y2), max(x1, x2), max(y1, y2)
+        half_width = stroke_width / 2
+        cap = element.get("stroke-linecap", "butt").strip()
+        delta_x = abs(x2 - x1)
+        delta_y = abs(y2 - y1)
+        length = hypot(delta_x, delta_y)
+        if cap == "round" or (length == 0 and cap == "square"):
+            pad_x = pad_y = half_width
+        elif length == 0:
+            pad_x = pad_y = 0
+        else:
+            # The stroke extends perpendicular to the line. Square caps extend along it as well.
+            unit_x = delta_x / length
+            unit_y = delta_y / length
+            pad_x = half_width * unit_y
+            pad_y = half_width * unit_x
+            if cap == "square":
+                pad_x += half_width * unit_x
+                pad_y += half_width * unit_y
+        return (
+            min(x1, x2) - pad_x, min(y1, y2) - pad_y,
+            max(x1, x2) + pad_x, max(y1, y2) + pad_y
+        )
 
     @staticmethod
     def get_polygon_bounds(element: Element) -> tuple:
@@ -106,24 +128,26 @@ class SvgBoundsUtil:
             "rect": SvgBoundsUtil.get_rect_bounds,
             "circle": SvgBoundsUtil.get_circle_bounds,
             "ellipse": SvgBoundsUtil.get_ellipse_bounds,
-            "line": SvgBoundsUtil.get_line_bounds,
             "polygon": SvgBoundsUtil.get_polygon_bounds,
             "polyline": SvgBoundsUtil.get_polygon_bounds,
             "text": SvgBoundsUtil.get_text_bounds
         }
-        handler = handlers.get(tag)
-        if handler is None:
-            raise ValueError(f"Unsupported graphical element: {tag}")
-        bounds = handler(element)
         opacity = SvgUtil.get_number(element, "opacity", 1)
         if opacity < 0 or opacity > 1:
             raise ValueError("Opacity must be between 0 and 1")
         stroke_width = SvgUtil.get_number(element, "stroke-width", 1)
         if stroke_width < 0:
             raise ValueError("Stroke width cannot be negative")
-        if element.get("stroke", "none") == "none":
+        has_stroke = element.get("stroke", "none") != "none"
+        if tag == "line":
+            return SvgBoundsUtil.get_line_bounds(element, stroke_width if has_stroke else 0)
+        handler = handlers.get(tag)
+        if handler is None:
+            raise ValueError(f"Unsupported graphical element: {tag}")
+        bounds = handler(element)
+        if not has_stroke:
             return bounds
-        # Polygon joins can extend to the default miter limit of four half-widths.
+        # Four half-widths bound default miter joins as well as all permitted endpoint caps.
         padding = stroke_width * (2 if tag in {"polygon", "polyline"} else 0.5)
         left, top, right, bottom = bounds
         return (

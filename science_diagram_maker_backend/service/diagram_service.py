@@ -15,6 +15,7 @@ from model.diagram_model import (
 )
 from service.concept_service import ConceptService
 from service.gemini_service import GeminiConfigurationError, GeminiService
+from service.generation_diagnostic_service import GenerationDiagnosticService
 from service.validation_service import ValidationService
 from util.cost_util import CostUtil
 from util.retry_util import RetryUtil
@@ -113,6 +114,9 @@ class DiagramService:
             )
             if validation.passed:
                 break
+            GenerationDiagnosticService.save_rejected_response(
+                generation, attempts[-1], requested_model_name, retries
+            )
             feedback = validation.get_failure_feedback()
             if generation.finish_reason == "MAX_TOKENS":
                 feedback += "\nUse fewer shapes and labels so the SVG fits."

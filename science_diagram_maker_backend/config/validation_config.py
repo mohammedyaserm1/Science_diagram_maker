@@ -17,8 +17,11 @@ class ValidationConfig:
         "fill",
         "stroke",
         "stroke-width",
+        "stroke-linecap",
         "opacity"
     }
+
+    ALLOWED_STROKE_LINECAPS = {"butt", "round", "square"}
 
     ALLOWED_ATTRIBUTES = {
         "svg": {"viewBox", "width", "height"},

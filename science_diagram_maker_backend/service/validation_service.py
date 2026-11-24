@@ -97,6 +97,11 @@ class ValidationService:
                             raise ValueError(f"Unsupported paint value: {value}")
                     if attribute == "font-weight" and value not in {"normal", "bold"}:
                         raise ValueError("Unsupported font weight")
+                    if (
+                        attribute == "stroke-linecap"
+                        and value.strip() not in ValidationConfig.ALLOWED_STROKE_LINECAPS
+                    ):
+                        raise ValueError("Unsupported stroke-linecap value")
                 for child in element:
                     child_tag = SvgUtil.get_tag_name(child)
                     if tag == "svg" and child_tag in (

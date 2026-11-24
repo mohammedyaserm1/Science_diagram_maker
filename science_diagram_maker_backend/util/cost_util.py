@@ -10,9 +10,7 @@ class CostUtil:
     ) -> float | None:
         if not model_name:
             return None
-        pricing = PricingConfig.MODEL_PRICING.get(
-            model_name.removeprefix("models/")
-        )
+        pricing = PricingConfig.get_price(model_name)
         if pricing is None:
             return None
         if token_usage.input_tokens is None:

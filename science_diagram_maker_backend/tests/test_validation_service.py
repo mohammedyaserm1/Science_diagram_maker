@@ -77,6 +77,56 @@ def test_stroked_circle_can_touch_viewbox_edge():
     assert get_check(svg, "viewbox_bounds").passed
 
 
+@pytest.mark.parametrize("cap", ["butt", "round", "square"])
+def test_supported_stroke_linecaps_pass(cap):
+    line = f'<line x1="30" y1="200" x2="770" y2="200" stroke="black" stroke-width="10" stroke-linecap="{cap}"/>'
+    svg = VALID_SVG.replace("</svg>", line + "</svg>")
+    assert ValidationService.validate_svg(svg).passed
+
+
+@pytest.mark.parametrize("cap", ["inherit", "triangle", "url(#paint)"])
+def test_unsupported_stroke_linecap_is_rejected(cap):
+    line = f'<line x1="40" x2="100" stroke-linecap="{cap}"/>'
+    svg = VALID_SVG.replace("</svg>", line + "</svg>")
+    check = get_check(svg, "security")
+    assert not check.passed
+    assert check.message == "Unsupported stroke-linecap value"
+
+
+@pytest.mark.parametrize("cap, fits", [("butt", True), ("round", False), ("square", False)])
+def test_horizontal_cap_extension_at_viewbox_edge(cap, fits):
+    line = f'<line x1="50" y1="200" x2="800" y2="200" stroke="black" stroke-width="10" stroke-linecap="{cap}"/>'
+    svg = VALID_SVG.replace("</svg>", line + "</svg>")
+    assert get_check(svg, "viewbox_bounds").passed is fits
+
+
+@pytest.mark.parametrize("cap, fits", [("round", True), ("square", False)])
+def test_diagonal_square_cap_extends_beyond_round_cap(cap, fits):
+    line = f'<line x1="6" y1="200" x2="26" y2="220" stroke="black" stroke-width="10" stroke-linecap="{cap}"/>'
+    svg = VALID_SVG.replace("</svg>", line + "</svg>")
+    assert get_check(svg, "viewbox_bounds").passed is fits
+
+
+@pytest.mark.parametrize("cap, fits", [("butt", True), ("round", False), ("square", False)])
+def test_zero_length_line_uses_the_cap_shape(cap, fits):
+    line = f'<line x1="3" y1="200" x2="3" y2="200" stroke="black" stroke-width="10" stroke-linecap="{cap}"/>'
+    svg = VALID_SVG.replace("</svg>", line + "</svg>")
+    assert get_check(svg, "viewbox_bounds").passed is fits
+
+
+def test_polyline_stroke_bound_includes_caps():
+    polyline = '<polyline points="3,200 40,200 40,240" stroke="black" stroke-width="10" stroke-linecap="round"/>'
+    svg = VALID_SVG.replace("</svg>", polyline + "</svg>")
+    assert get_check(svg, "security").passed
+    assert not get_check(svg, "viewbox_bounds").passed
+
+
+def test_explicit_stroke_linejoin_stays_outside_allowlist():
+    line = '<line x1="40" x2="100" stroke-linejoin="round"/>'
+    svg = VALID_SVG.replace("</svg>", line + "</svg>")
+    assert not get_check(svg, "security").passed
+
+
 def test_text_outside_viewbox():
     svg = VALID_SVG.replace('x="100"', 'x="795"', 1)
     assert not get_check(svg, "viewbox_bounds").passed

@@ -1,3 +1,4 @@
+import json
 import pytest
 from unittest.mock import patch
 from fastapi.testclient import TestClient
@@ -139,6 +140,31 @@ def test_live_generation_rejects_invalid_svg(isolated_results_file, create_saved
     assert detail["retries"]["validation_retries"] == 1
     assert detail["token_usage"]["total_tokens"] == 600
     assert "svg" not in detail
+
+
+def test_rejected_svg_is_saved_locally_and_excluded_from_api(
+    tmp_path, monkeypatch, create_saved_result
+):
+    monkeypatch.setattr(AppConfig, "SVG_DIAGNOSTICS_DIR", tmp_path)
+    saved = create_saved_result(3)
+    unsafe_svg = saved.svg.replace("</svg>", "<script>DO_NOT_EXPOSE</script></svg>")
+    raw_svg = f"```svg\n{unsafe_svg}\n```"
+    generation = GenerationResultModel(
+        concept_id=3, model_name=saved.model_name, svg=unsafe_svg, raw_svg=raw_svg,
+        finish_reason="STOP", token_usage=saved.token_usage
+    )
+    with patch("service.diagram_service.GeminiService.generate_svg", return_value=generation):
+        response = client.post("/api/diagrams/3/generate")
+    assert response.status_code == 502
+    assert "raw_svg" not in response.text and "DO_NOT_EXPOSE" not in response.text
+    artifacts = list(tmp_path.glob("concept_3_*.json"))
+    assert len(artifacts) == 2
+    for artifact in artifacts:
+        diagnostic = json.loads(artifact.read_text(encoding="utf-8"))
+        assert diagnostic["raw_svg"] == raw_svg
+        assert not diagnostic["attempt"]["validation"]["passed"]
+        assert diagnostic["attempt"]["finish_reason"] == "STOP"
+    assert client.get(f"/.svg_diagnostics/{artifacts[0].name}").status_code == 404
 
 
 def test_live_generation_without_api_key(isolated_results_file, monkeypatch):

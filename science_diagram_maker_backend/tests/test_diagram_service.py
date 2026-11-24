@@ -56,7 +56,7 @@ def test_successful_generation():
     assert generate.call_count == 1
 
 
-@pytest.mark.parametrize("reported_model", ["gemini-3.6-flash", None])
+@pytest.mark.parametrize("reported_model", ["unpriced-model", None])
 def test_requested_model_does_not_supply_missing_pricing(monkeypatch, reported_model):
     monkeypatch.setattr(AppConfig, "GEMINI_MODEL", "gemini-3.5-flash")
     generation = create_generation(VALID_SVG)

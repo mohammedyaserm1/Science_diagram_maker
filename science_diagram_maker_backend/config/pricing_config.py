@@ -1,3 +1,6 @@
+from datetime import date, datetime, timezone
+
+
 class PricingConfig:
     TOKENS_PER_MILLION = 1000000
 
@@ -16,3 +19,13 @@ class PricingConfig:
             "output": 1.50
         }
     }
+
+    @staticmethod
+    def get_price(model_name: str, on_date: date | None = None) -> dict[str, float] | None:
+        model_name = model_name.removeprefix("models/")
+        if model_name == "gemini-3.6-flash":
+            effective_date = on_date or datetime.now(timezone.utc).date()
+            if effective_date < date(2027, 1, 1):
+                return {"input": 0.75, "output": 3.75}
+            return {"input": 1.50, "output": 7.50}
+        return PricingConfig.MODEL_PRICING.get(model_name)

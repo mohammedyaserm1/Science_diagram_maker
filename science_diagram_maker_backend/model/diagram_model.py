@@ -21,6 +21,7 @@ class GenerationResultModel(BaseModel):
     svg: str
     token_usage: TokenUsageModel
     finish_reason: str | None = None
+    raw_svg: str | None = None
 
 
 class ValidationCheckModel(BaseModel):

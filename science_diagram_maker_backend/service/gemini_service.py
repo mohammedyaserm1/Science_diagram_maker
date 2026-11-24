@@ -33,6 +33,7 @@ class GeminiService:
         with genai.Client(
             api_key=AppConfig.GEMINI_API_KEY,
             http_options=types.HttpOptions(
+                api_version=AppConfig.GEMINI_API_VERSION,
                 timeout=AppConfig.GEMINI_TIMEOUT_MS,
                 retry_options=types.HttpRetryOptions(attempts=1)
             )
@@ -50,13 +51,14 @@ class GeminiService:
                     automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True)
                 )
             )
-        svg = GeminiService.extract_svg(response.text or "")
+        raw_svg = response.text or ""
         usage = response.usage_metadata
         finish_reason = response.candidates[0].finish_reason if response.candidates else None
         return GenerationResultModel(
             concept_id=concept.id,
             model_name=response.model_version or None,
-            svg=svg,
+            svg=GeminiService.extract_svg(raw_svg),
+            raw_svg=raw_svg,
             finish_reason=finish_reason.value if finish_reason else None,
             token_usage=TokenUsageModel(
                 input_tokens=usage.prompt_token_count if usage else None,

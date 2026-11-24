@@ -1,4 +1,7 @@
 import pytest
+from datetime import date
+
+from config.pricing_config import PricingConfig
 from model.diagram_model import TokenUsageModel
 from util.cost_util import CostUtil
 
@@ -39,6 +42,15 @@ def test_unknown_model_cost():
         "unknown-model",
         usage
     ) is None
+
+
+@pytest.mark.parametrize(
+    ("on_date", "expected"),
+    [(date(2026, 12, 31), {"input": 0.75, "output": 3.75}),
+     (date(2027, 1, 1), {"input": 1.50, "output": 7.50})]
+)
+def test_flash_36_estimate_uses_effective_standard_rates(on_date, expected):
+    assert PricingConfig.get_price("models/gemini-3.6-flash", on_date) == expected
 
 
 def test_missing_token_usage():
