@@ -15,15 +15,15 @@ class RetryUtil:
         operation: Callable[[], T],
         retries: RetryModel
     ) -> T:
-        for attempt in range(AppConfig.MAX_API_RETRIES + 1):
+        while True:
             try:
                 return operation()
             except APIError as error:
                 if error.code not in AppConfig.RETRYABLE_STATUS_CODES:
                     raise
-                if attempt >= AppConfig.MAX_API_RETRIES:
+                if retries.api_retries >= AppConfig.MAX_API_RETRIES:
                     raise
-                delay = AppConfig.RETRY_INITIAL_DELAY * (2 ** attempt)
+                delay = AppConfig.RETRY_INITIAL_DELAY * (2 ** retries.api_retries)
                 logger.warning(
                     "Gemini API error %s. Retrying in %s seconds",
                     error.code,
@@ -32,4 +32,3 @@ class RetryUtil:
                 time.sleep(delay)
                 retries.api_retries += 1
                 retries.total_retries += 1
-        raise RuntimeError("API retry limit exhausted")

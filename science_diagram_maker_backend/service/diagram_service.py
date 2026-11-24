@@ -1,6 +1,9 @@
 import logging
 from datetime import datetime, timezone
 from google.genai.errors import APIError
+from httpx import RequestError, TimeoutException
+from httpx2 import RequestError as GeminiRequestError
+from httpx2 import TimeoutException as GeminiTimeoutError
 from config.app_config import AppConfig
 from config.validation_config import ValidationConfig
 from model.diagram_model import (
@@ -11,12 +14,20 @@ from model.diagram_model import (
     ValidationResultModel
 )
 from service.concept_service import ConceptService
-from service.gemini_service import GeminiService
+from service.gemini_service import GeminiConfigurationError, GeminiService
 from service.validation_service import ValidationService
 from util.cost_util import CostUtil
 from util.retry_util import RetryUtil
 
 logger = logging.getLogger(__name__)
+
+GEMINI_API_ERRORS = {
+    401: (502, "Gemini rejected the backend credentials (HTTP 401)"),
+    403: (502, "Gemini denied access to the configured model (HTTP 403)"),
+    429: (429, "Gemini rate limit reached after retries (HTTP 429). Try again later."),
+    503: (503, "Gemini is temporarily unavailable after retries (HTTP 503). Try again later."),
+    504: (504, "Gemini timed out (HTTP 504). Try again later.")
+}
 
 
 class DiagramService:
@@ -27,6 +38,8 @@ class DiagramService:
         attempts = []
         svg = None
         error_message = None
+        error_status = None
+        model_name = AppConfig.GEMINI_MODEL
         feedback = ""
         validation = DiagramService.create_failed_validation(
             "No SVG generated"
@@ -48,9 +61,22 @@ class DiagramService:
                     retries
                 )
             except APIError as error:
-                error_message = (
-                    f"Gemini API request failed (HTTP {error.code})"
+                error_status, error_message = GEMINI_API_ERRORS.get(
+                    error.code,
+                    (502, f"Gemini API request failed (HTTP {error.code})")
                 )
+                break
+            except GeminiConfigurationError:
+                error_status = 503
+                error_message = "Live generation is unavailable because Gemini is not configured."
+                break
+            except (TimeoutException, GeminiTimeoutError):
+                error_status = 504
+                error_message = "Gemini timed out. Try again later."
+                break
+            except (RequestError, GeminiRequestError):
+                error_status = 502
+                error_message = "The backend could not reach Gemini. Try again later."
                 break
             except Exception as error:
                 logger.error(
@@ -58,8 +84,10 @@ class DiagramService:
                     concept_id,
                     type(error).__name__
                 )
+                error_status = 500
                 error_message = "Diagram generation failed"
                 break
+            model_name = generation.model_name
             svg = generation.svg
             validation = ValidationService.validate_svg(svg)
             attempts.append(
@@ -78,9 +106,10 @@ class DiagramService:
             feedback = validation.get_failure_feedback()
         if not validation.passed and error_message is None:
             error_message = "SVG validation failed after allowed attempts"
+            error_status = 502
         result = DiagramResultModel(
             concept=concept,
-            model_name=AppConfig.GEMINI_MODEL,
+            model_name=model_name,
             svg=svg if validation.passed else None,
             passed=validation.passed,
             validation=validation,
@@ -91,7 +120,8 @@ class DiagramService:
             estimated_cost_usd=DiagramService.get_total_cost(attempts),
             attempts=attempts,
             generated_at=datetime.now(timezone.utc).isoformat(),
-            error=error_message
+            error=error_message,
+            error_status=error_status
         )
         DiagramService.log_result(result)
         return result
@@ -129,7 +159,8 @@ class DiagramService:
         logger.info(
             "Concept: %s | Model: %s | Passed: %s | "
             "Input tokens: %s | Output tokens: %s | "
-            "Thinking tokens: %s | Estimated cost USD: %s | "
+            "Thinking tokens: %s | Total tokens: %s | Estimated cost USD: %s | "
+            "Generated at: %s | "
             "API retries: %s | Validation retries: %s | Total retries: %s",
             result.concept.name,
             result.model_name,
@@ -137,7 +168,9 @@ class DiagramService:
             result.token_usage.input_tokens,
             result.token_usage.output_tokens,
             result.token_usage.thinking_tokens,
+            result.token_usage.total_tokens,
             result.estimated_cost_usd,
+            result.generated_at,
             result.retries.api_retries,
             result.retries.validation_retries,
             result.retries.total_retries

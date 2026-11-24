@@ -83,7 +83,7 @@ class SvgBoundsUtil:
         if element.get("font-family") != "monospace":
             raise ValueError("Text must explicitly use a monospace font")
         text = " ".join((element.text or "").split())
-        width = len(text) * font_size * 1.1
+        width = len(text) * font_size * 0.75
         anchor = element.get("text-anchor", "start")
         if anchor == "middle":
             x -= width / 2
@@ -123,7 +123,8 @@ class SvgBoundsUtil:
             raise ValueError("Stroke width cannot be negative")
         if element.get("stroke", "none") == "none":
             return bounds
-        padding = stroke_width * 2
+        # Polygon joins can extend to the default miter limit of four half-widths.
+        padding = stroke_width * (2 if tag in {"polygon", "polyline"} else 0.5)
         left, top, right, bottom = bounds
         return (
             left - padding,

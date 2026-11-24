@@ -3,6 +3,10 @@ from config.app_config import AppConfig
 from model.diagram_model import ConceptModel
 
 
+class ConceptNotFoundError(ValueError):
+    pass
+
+
 class ConceptService:
     @staticmethod
     def get_all_concepts() -> list[ConceptModel]:
@@ -16,4 +20,4 @@ class ConceptService:
         for concept in concepts:
             if concept.id == concept_id:
                 return concept
-        raise ValueError(f"Concept with ID {concept_id} was not found")
+        raise ConceptNotFoundError(f"Concept with ID {concept_id} was not found")

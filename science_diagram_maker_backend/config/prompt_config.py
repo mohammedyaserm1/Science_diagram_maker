@@ -3,6 +3,27 @@ from model.diagram_model import ConceptModel
 
 
 class PromptConfig:
+    CONCEPT_LAYOUT_GUIDANCE = {
+        1: (
+            "Draw a right-angle marker and a right triangle with legs 3 and 4 "
+            "and hypotenuse 5. Label those sides and explain the equation using "
+            "short lines. A full set of drawn squares is optional. Highlight "
+            "the sides or equation terms in sequence."
+        ),
+        2: (
+            "Use a horizontal diameter that touches both edges, a radius in a "
+            "different direction, a centre dot, and a circle outline labelled "
+            "Circumference. Pulse the outline or highlight the features in sequence."
+        ),
+        3: (
+            "Draw one closed loop with one cell, represented by exactly one "
+            "long plate and one short plate, and two rectangular resistor symbols. "
+            "Label the source Cell. Use short captions to show current is the "
+            "same throughout and the cell voltage is shared by the resistors. "
+            "Animate markers along the wire in one consistent direction."
+        )
+    }
+
     SVG_GENERATION_PROMPT = """
 You are an expert educational SVG illustrator specializing in UK GCSE
 science and mathematics.
@@ -52,6 +73,13 @@ Strict restrictions:
 - Keep text labels short and give them generous space.
 - Use text-anchor="middle" where suitable.
 - Leave generous space around strokes and moving elements.
+- Use a maximum font size of 24 for headings.
+- Use font sizes between 12 and 18 for labels.
+- Keep individual text elements under 40 characters.
+- Split longer explanations into separate text elements.
+- Leave at least 30 units of space from the canvas edges.
+- Estimate text width as character count multiplied by font size multiplied by 0.75.
+- Consider text-anchor when calculating text boundaries.
 
 Animation requirements:
 
@@ -72,6 +100,9 @@ Educational requirements:
 - Use clear visual hierarchy, readable text and strong colour contrast.
 - Avoid overlapping labels and shapes.
 - Use simple shapes to create a polished educational illustration.
+- Verify every rect satisfies x + width <= {width} - 30 and
+  y + height <= {height} - 30, and check all label extents before returning.
+- {layout_guidance}
 
 Validation feedback:
 {validation_feedback}
@@ -90,5 +121,8 @@ Return only the complete SVG markup.
             description=concept.description,
             width=AppConfig.SVG_WIDTH,
             height=AppConfig.SVG_HEIGHT,
+            layout_guidance=PromptConfig.CONCEPT_LAYOUT_GUIDANCE.get(
+                concept.id, "Keep each illustration focused on the supplied description."
+            ),
             validation_feedback=validation_feedback or "First generation attempt."
         )

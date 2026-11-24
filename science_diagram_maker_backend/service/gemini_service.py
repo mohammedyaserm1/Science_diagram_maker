@@ -10,6 +10,10 @@ from model.diagram_model import (
 )
 
 
+class GeminiConfigurationError(RuntimeError):
+    pass
+
+
 class GeminiService:
     @staticmethod
     def generate_svg(
@@ -17,7 +21,7 @@ class GeminiService:
         validation_feedback: str = ""
     ) -> GenerationResultModel:
         if not AppConfig.GEMINI_API_KEY:
-            raise RuntimeError("Gemini API key is not configured")
+            raise GeminiConfigurationError("Gemini API key is not configured")
         prompt = PromptConfig.build_svg_prompt(concept, validation_feedback)
         with genai.Client(
             api_key=AppConfig.GEMINI_API_KEY,
@@ -40,7 +44,7 @@ class GeminiService:
         usage = response.usage_metadata
         return GenerationResultModel(
             concept_id=concept.id,
-            model_name=AppConfig.GEMINI_MODEL,
+            model_name=response.model_version or AppConfig.GEMINI_MODEL,
             svg=svg,
             token_usage=TokenUsageModel(
                 input_tokens=usage.prompt_token_count if usage else None,
@@ -52,8 +56,6 @@ class GeminiService:
 
     @staticmethod
     def extract_svg(response_text: str) -> str:
-        if not response_text.strip():
-            raise ValueError("Gemini returned an empty response")
         cleaned_text = re.sub(
             r"\A\s*```(?:svg|xml)?\s*|\s*```\s*\Z",
             "",

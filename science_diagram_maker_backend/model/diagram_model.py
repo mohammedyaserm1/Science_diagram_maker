@@ -65,3 +65,4 @@ class DiagramResultModel(BaseModel):
     attempts: list[GenerationAttemptModel]
     generated_at: str
     error: str | None = None
+    error_status: int | None = None

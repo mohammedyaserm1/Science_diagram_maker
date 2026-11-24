@@ -69,6 +69,14 @@ def test_stroke_outside_viewbox():
     assert not get_check(svg, "viewbox_bounds").passed
 
 
+def test_stroked_circle_can_touch_viewbox_edge():
+    svg = VALID_SVG.replace(
+        'cx="200"',
+        'cx="55" stroke="black" stroke-width="10"'
+    )
+    assert get_check(svg, "viewbox_bounds").passed
+
+
 def test_text_outside_viewbox():
     svg = VALID_SVG.replace('x="100"', 'x="795"', 1)
     assert not get_check(svg, "viewbox_bounds").passed
