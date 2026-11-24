@@ -1,0 +1,6 @@
+{
+    "$schema": "https://openapi.vercel.sh/vercel.json",
+    "installCommand": "npm ci --prefix science_diagram_maker_frontend",
+    "buildCommand": "npm --prefix science_diagram_maker_frontend run build",
+    "outputDirectory": "science_diagram_maker_frontend/dist"
+}

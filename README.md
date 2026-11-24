@@ -135,11 +135,11 @@ The latest local check passed the backend suite, frontend lint and the productio
 
 ## Deploy on Vercel and Render
 
-There is no verified public deployment URL yet.
+The production dashboard serves all five saved previews, and the Render health and saved-results endpoints respond publicly. [Live dashboard](https://science-diagram-maker-sigma.vercel.app/) · [Backend health](https://science-diagram-maker-backend.onrender.com/api/health) · [Saved results API](https://science-diagram-maker-backend.onrender.com/api/diagrams)
 
-1. Import this repository as a Vite project in Vercel. Set the root directory to `science_diagram_maker_frontend` and enable **Include source files outside of the Root Directory in the Build Step** so it can read the committed backend JSON. Use `npm run build` and output directory `dist`. [Vercel monorepo settings](https://vercel.com/docs/monorepos/monorepo-faq)
-2. In Render, create a Blueprint using the root `render.yaml`. Enter the free-tier Gemini key as a server-side secret and set `FRONTEND_URL` to the Vercel production origin. [Render Blueprint reference](https://render.com/docs/blueprint-spec)
-3. Set `VITE_API_BASE_URL` in Vercel to the Render service’s HTTPS URL followed by `/api` and redeploy. Open the public page, check the five initial rows, then test Generate for one concept.
+1. Use the repository root in the Vercel Hobby project. The root `vercel.json` installs and builds the frontend under `science_diagram_maker_frontend` and serves its `dist` folder. This gives Vite access to the committed backend results and fallback sources. [Vercel project configuration](https://vercel.com/docs/project-configuration/vercel-json)
+2. Set the Vercel production variable `VITE_API_BASE_URL=https://science-diagram-maker-backend.onrender.com/api` before building. The first production deployment used the locally verified static bundle. [Vercel environment variables](https://vercel.com/docs/environment-variables)
+3. In Render, set `FRONTEND_URL=https://science-diagram-maker-sigma.vercel.app` and apply the change with a redeploy. The launch check returned HTTP 400 for the Vercel origin's CORS preflight, so browser access to live generation still needs this setting. Keep the Gemini key in Render's environment only. [Render environment settings](https://render.com/docs/configure-environment-variables)
 
 Render’s free service may sleep when idle. The bundled dashboard still loads during a backend cold start, while a live request may take longer. Review data stays in the current browser profile. The public generation endpoint shares the configured key’s provider quota.
 

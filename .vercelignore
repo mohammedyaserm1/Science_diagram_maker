@@ -1,0 +1,12 @@
+.git/
+.vercel/
+**/.env
+**/.env.*
+**/.venv/
+**/node_modules/
+**/dist/
+**/.pytest_cache/
+**/.svg_diagnostics/
+**/__pycache__/
+**/*.log
+**/*.tmp
