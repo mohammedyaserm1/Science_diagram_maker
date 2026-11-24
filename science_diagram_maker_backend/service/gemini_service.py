@@ -18,34 +18,46 @@ class GeminiService:
     @staticmethod
     def generate_svg(
         concept: ConceptModel,
-        validation_feedback: str = ""
+        validation_feedback: str = "",
+        reviewer_feedback: str = ""
     ) -> GenerationResultModel:
         if not AppConfig.GEMINI_API_KEY:
             raise GeminiConfigurationError("Gemini API key is not configured")
-        prompt = PromptConfig.build_svg_prompt(concept, validation_feedback)
+        prompt = PromptConfig.build_svg_prompt(concept, validation_feedback, reviewer_feedback)
+        model_name = AppConfig.GEMINI_MODEL
+        thinking = (
+            types.ThinkingConfig(thinking_level=types.ThinkingLevel.MINIMAL)
+            if model_name.removeprefix("models/") in AppConfig.MINIMAL_THINKING_MODELS
+            else None
+        )
         with genai.Client(
             api_key=AppConfig.GEMINI_API_KEY,
             http_options=types.HttpOptions(
-                timeout=60000,
+                timeout=AppConfig.GEMINI_TIMEOUT_MS,
                 retry_options=types.HttpRetryOptions(attempts=1)
             )
         ) as client:
             response = client.models.generate_content(
-                model=AppConfig.GEMINI_MODEL,
+                model=model_name,
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     temperature=AppConfig.GEMINI_TEMPERATURE,
                     max_output_tokens=AppConfig.GEMINI_MAX_OUTPUT_TOKENS,
                     candidate_count=1,
-                    response_mime_type="text/plain"
+                    response_mime_type="text/plain",
+                    system_instruction=PromptConfig.build_system_instruction(),
+                    thinking_config=thinking,
+                    automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True)
                 )
             )
         svg = GeminiService.extract_svg(response.text or "")
         usage = response.usage_metadata
+        finish_reason = response.candidates[0].finish_reason if response.candidates else None
         return GenerationResultModel(
             concept_id=concept.id,
             model_name=response.model_version or None,
             svg=svg,
+            finish_reason=finish_reason.value if finish_reason else None,
             token_usage=TokenUsageModel(
                 input_tokens=usage.prompt_token_count if usage else None,
                 output_tokens=usage.candidates_token_count if usage else None,

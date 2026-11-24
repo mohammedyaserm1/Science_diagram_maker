@@ -6,7 +6,7 @@
             "subject": "Maths",
             "description": "In a right-angled triangle, the longest side is called the hypotenuse. The square of the hypotenuse is equal to the sum of the squares of the other two sides: a² + b² = c²."
         },
-        "model_name": "gemini-3.5-flash",
+        "model_name": "gemini-3.6-flash",
         "svg": null,
         "passed": false,
         "validation": {
@@ -14,49 +14,92 @@
             "checks": [
                 {
                     "name": "svg_validity",
-                    "passed": false,
-                    "message": "No SVG generated"
+                    "passed": true,
+                    "message": "SVG parsed successfully"
                 },
                 {
                     "name": "viewbox_bounds",
                     "passed": false,
-                    "message": "No SVG generated"
+                    "message": "Cannot verify bounds for unsupported or unsafe SVG"
                 },
                 {
                     "name": "title_and_labels",
-                    "passed": false,
-                    "message": "No SVG generated"
+                    "passed": true,
+                    "message": "Title and 11 text labels found"
                 },
                 {
                     "name": "animation",
-                    "passed": false,
-                    "message": "No SVG generated"
+                    "passed": true,
+                    "message": "Found 6 valid SMIL animations"
                 },
                 {
                     "name": "security",
                     "passed": false,
-                    "message": "No SVG generated"
+                    "message": "Unsupported or unsafe attribute: line.stroke-linecap"
                 }
             ]
         },
         "token_usage": {
-            "input_tokens": null,
-            "output_tokens": null,
+            "input_tokens": 628,
+            "output_tokens": 2095,
             "thinking_tokens": null,
-            "total_tokens": null
+            "total_tokens": 2723
         },
         "retries": {
-            "api_retries": 0,
-            "validation_retries": 0,
-            "total_retries": 0
+            "api_retries": 2,
+            "validation_retries": 1,
+            "total_retries": 3
         },
         "estimated_cost_usd": null,
-        "attempts": [],
-        "generated_at": "2026-11-24T14:37:20.540935+00:00",
+        "attempts": [
+            {
+                "attempt_number": 1,
+                "token_usage": {
+                    "input_tokens": 628,
+                    "output_tokens": 2095,
+                    "thinking_tokens": null,
+                    "total_tokens": 2723
+                },
+                "validation": {
+                    "passed": false,
+                    "checks": [
+                        {
+                            "name": "svg_validity",
+                            "passed": true,
+                            "message": "SVG parsed successfully"
+                        },
+                        {
+                            "name": "viewbox_bounds",
+                            "passed": false,
+                            "message": "Cannot verify bounds for unsupported or unsafe SVG"
+                        },
+                        {
+                            "name": "title_and_labels",
+                            "passed": true,
+                            "message": "Title and 11 text labels found"
+                        },
+                        {
+                            "name": "animation",
+                            "passed": true,
+                            "message": "Found 6 valid SMIL animations"
+                        },
+                        {
+                            "name": "security",
+                            "passed": false,
+                            "message": "Unsupported or unsafe attribute: line.stroke-linecap"
+                        }
+                    ]
+                },
+                "estimated_cost_usd": null,
+                "reported_model_name": "gemini-3.6-flash",
+                "finish_reason": "STOP"
+            }
+        ],
+        "generated_at": "2026-11-24T15:07:45.263629+00:00",
         "error": "Gemini timed out (HTTP 504). Try again later.",
         "error_status": 504,
         "requested_model_name": "gemini-3.5-flash",
-        "reported_model_name": null
+        "reported_model_name": "gemini-3.6-flash"
     },
     {
         "concept": {

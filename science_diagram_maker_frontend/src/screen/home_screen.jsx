@@ -11,12 +11,15 @@ export default function HomeScreen() {
     const inFlight = useRef(new Set());
     const { getReview, updateReview, storageError } = useReviews();
 
-    async function handleGenerate(conceptId) {
+    async function handleGenerate(diagram) {
+        const conceptId = diagram.concept.id;
         if (inFlight.current.has(conceptId)) return;
         inFlight.current.add(conceptId);
         setGenerationByConcept((current) => ({ ...current, [conceptId]: { isGenerating: true } }));
         try {
-            const result = await generateDiagram(conceptId);
+            const review = getReview(diagram);
+            const feedback = review.status === 'rejected' ? review.notes : '';
+            const result = await generateDiagram(conceptId, feedback);
             if (result.concept.id !== conceptId || !canPreview(result)) {
                 throw new Error('The API did not return a validated preview for this concept.');
             }
@@ -80,7 +83,7 @@ export default function HomeScreen() {
                                         generation={generationByConcept[diagram.concept.id]}
                                         review={getReview(diagram)}
                                         onReview={(changes) => updateReview(diagram, changes)}
-                                        onGenerate={() => handleGenerate(diagram.concept.id)}
+                                        onGenerate={() => handleGenerate(diagram)}
                                     />
                                 ))}
                             </tbody>

@@ -76,6 +76,36 @@ def test_live_generation_rejects_unknown_concept():
         generate.assert_not_called()
 
 
+def test_live_generation_accepts_notes_for_only_the_requested_concept(create_saved_result):
+    saved = create_saved_result(3)
+    generation = GenerationResultModel(
+        concept_id=3, model_name=saved.model_name, svg=saved.svg,
+        token_usage=saved.token_usage
+    )
+    notes = "Place the current marker on the wire."
+    with patch(
+        "service.diagram_service.GeminiService.generate_svg", return_value=generation
+    ) as generate:
+        response = client.post(
+            "/api/diagrams/3/generate",
+            content=notes,
+            headers={"Content-Type": "text/plain; charset=UTF-8"}
+        )
+    assert response.status_code == 200
+    generate.assert_called_once_with(saved.concept, "", reviewer_feedback=notes)
+
+
+def test_live_generation_rejects_oversized_feedback():
+    with patch("service.diagram_service.GeminiService.generate_svg") as generate:
+        response = client.post(
+            "/api/diagrams/3/generate",
+            content="x" * (AppConfig.MAX_REVIEWER_FEEDBACK_LENGTH + 1),
+            headers={"Content-Type": "text/plain; charset=UTF-8"}
+        )
+    assert response.status_code == 422
+    generate.assert_not_called()
+
+
 def test_live_generation_preserves_saved_svg_on_provider_failure(
     isolated_results_file, create_saved_result
 ):

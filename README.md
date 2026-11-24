@@ -39,8 +39,9 @@ Open the local Vite URL at `http://localhost:5173`. The backend exposes Swagger 
 
 - React and Vite build a single dashboard, with Tailwind CSS and a stylesheet for the reviewer layout. `diagram_service.js` loads the committed concept and result JSON at build time and sends live generation requests when a reviewer clicks **Generate**.
 - In FastAPI, `diagram_route.py` dispatches to `DiagramController`. `DiagramService.generate_diagram()` is shared by the batch CLI and live endpoint. It calls the Google Gemini SDK, delegates to the DefusedXML validator, and returns a Pydantic result with the attempts, token counts, checks, and retries.
-- `ResultService` writes the batch results to `science_diagram_maker_backend/data/results.json` using an atomic file replacement. The live route returns a result for the open dashboard without changing the saved file. An unsuccessful generation shows its error and any available checks while keeping the last usable preview.
+- `ResultService` writes the batch results to `science_diagram_maker_backend/data/results.json` using an atomic file replacement. The live route returns a result for the open dashboard without changing the saved file. An unsuccessful generation shows its error, checks and retry counts while keeping the last usable preview and its existing review.
 - The browser renders a validated SVG in an image with a data URL. Clicking a preview enlarges it. Reviewer decisions and notes use `localStorage` keyed by concept ID and generation timestamp, so a replacement requires a fresh review. The current tab keeps successful live previews in `sessionStorage` across refreshes. A new session starts with the bundled previews, and their review history remains available in the browser profile.
+- Initial load, refresh, Approve, Reject and note edits make zero API requests. Generate sends one POST for the selected row. If that revision is rejected, the request carries its note as optional plain text, up to 2,000 characters. The prompt keeps that text separate from system instructions and treats it as untrusted feedback. A replacement starts at Pending review and preserves the previous review under its original revision.
 
 ## Generate and inspect diagrams
 
@@ -53,18 +54,20 @@ Run these commands from `science_diagram_maker_backend`.
 .venv\Scripts\python.exe generate_diagrams.py --concept-id 2
 ```
 
-A failed single-concept run preserves a previously passing result. Rebuild the frontend after updating the saved JSON so its initial dashboard uses the new results.
+A failed single-concept run preserves a previously passing result. For assessment repairs, review candidates one at a time in the order Pythagoras, Parts of a circle, then Series circuit. Check the geometry or science and the browser animation before promoting a candidate to the saved results. Rebuild the frontend after updating the saved JSON so its initial dashboard uses the new results.
 
 | Endpoint | Purpose |
 | --- | --- |
 | `GET /api/health` | Service health. |
 | `GET /api/diagrams` | Return all saved results. |
 | `GET /api/diagrams/{concept_id}` | Return one saved result or HTTP 404. |
-| `POST /api/diagrams/{concept_id}/generate` | Generate and validate one concept live. A failure returns an HTTP error with a public message and available attempt metadata. |
+| `POST /api/diagrams/{concept_id}/generate` | Generate and validate one concept live. The optional `text/plain` body is reviewer feedback. A failure returns an HTTP error with a public message and available attempt metadata. |
 
 Live generation returns 404 for an unknown concept, 429 for an exhausted rate limit, 502 for upstream or SVG validation failures, 503 for an unavailable or unconfigured provider, and 504 for a timeout.
 
 ### Checks, retries and costs
+
+`PromptConfig` builds common SVG system instructions from the validator's allowlist and supplies separate subject-specific drawing guidance for all five concepts. The Gemini SDK requests minimal thinking on the configured Flash model, disables automatic function calling, and retains the 60-second request timeout and 8,192-token output limit. The pipeline records the provider's finish reason for each candidate. A `MAX_TOKENS` candidate fails the SVG validity check and can use the existing correction retry.
 
 1. **SVG validity** parses XML with DefusedXML and checks the SVG root and namespace.
 2. **ViewBox bounds** checks supported geometry, stroke padding, estimated text extents and the endpoints of circle animation.
@@ -80,7 +83,7 @@ The estimate multiplies input, output and reported thinking tokens by Gemini’s
 
 | Concept | Saved model status | Validation | Tokens (input / output / thinking / total) | Estimated USD | Retries (API / validation / total) |
 | --- | --- | --- | --- | ---: | --- |
-| Pythagoras' theorem | Requested 3.5 Flash | Never reached after HTTP 504 | — / — / — / — | — | 0 / 0 / 0 |
+| Pythagoras' theorem | Requested 3.5 Flash, reported 3.6 Flash | Failed SVG allowlist, then correction timed out | 628 / 2,095 / — / 2,723 | — | 2 / 1 / 3 |
 | Parts of a circle | Requested 3.5 Flash | Never reached after connection failure | — / — / — / — | — | 0 / 0 / 0 |
 | Series circuit | 3.5 Flash-Lite | Passed | 718 / 1,282 / — / 2,000 | $0.00342040 | 0 / 0 / 0 |
 | Photosynthesis | 3.5 Flash-Lite | Passed | 809 / 1,262 / — / 2,071 | $0.00339770 | 0 / 0 / 0 |
@@ -103,9 +106,17 @@ I requested `gemini-3.5-flash` for concepts 1, 2 and 3 in order. Pythagoras retu
 
 The circuit response reported 984 input, 328 output and 7,860 thinking tokens, totaling 9,172. There were zero API retries and one validation retry. The application recorded the cost as unavailable because its pricing configuration has no rate for the reported model. Using Google's standard 3.6 Flash rates through 31 December 2026, the response has a paid-tier equivalent of $0.03144300. The request used the existing free tier. The saved circuit preview is the original Flash-Lite SVG, and the two maths concepts still have no preview to review. [Google Gemini API pricing](https://ai.google.dev/gemini-api/docs/pricing#gemini-3.6-flash)
 
+### Individual generation with the revised prompts
+
+I ran Pythagoras first with a separate candidate file. After an HTTP 503, Gemini returned a complete response with finish reason `STOP`. The SVG parsed and met the title, label and animation checks, but used `stroke-linecap`, which the SVG allowlist rejects. The validator could therefore not verify its bounds. The one allowed correction encountered an HTTP 503 and then an HTTP 504. The completed run recorded two API retries and one validation retry. Its reported model was `gemini-3.6-flash`, and it reported 628 input and 2,095 output tokens. Thinking-token metadata and the configured cost estimate were unavailable.
+
+The generation sequence stopped at concept 1. The prompt now explicitly requests default stroke caps and joins. Parts of a circle and Series circuit still await replacements, and the existing Series circuit, Photosynthesis and States of matter SVGs were preserved. The previous saved failures also remain in Git. [Earlier Flash results](https://github.com/mohammedyaserm1/Science_diagram_maker/blob/bbb35bd/science_diagram_maker_backend/data/results.json)
+
 ## Verify
 
 From the backend directory run `.venv\Scripts\python.exe -m pytest -q`. From the frontend directory run `npm run lint` and `npm run build`. A browser check should confirm five startup rows, animated previews, persistent decisions and notes, and preservation of an accepted preview when live generation fails.
+
+The final local check passed 70 backend tests, frontend lint and the production build. The browser showed all five saved rows and all three available animations. With Gemini mocked, the network check confirmed zero requests for local review actions and refresh, plus one targeted POST per Generate click. A failed request retained the preview and review. A successful request created a fresh review and kept the other rows unchanged.
 
 ## Deploy on Vercel and Render
 

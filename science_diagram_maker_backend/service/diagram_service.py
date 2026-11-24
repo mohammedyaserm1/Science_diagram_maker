@@ -32,7 +32,7 @@ GEMINI_API_ERRORS = {
 
 class DiagramService:
     @staticmethod
-    def generate_diagram(concept_id: int) -> DiagramResultModel:
+    def generate_diagram(concept_id: int, reviewer_feedback: str = "") -> DiagramResultModel:
         concept = ConceptService.get_concept_by_id(concept_id)
         retries = RetryModel()
         attempts = []
@@ -56,7 +56,8 @@ class DiagramService:
                 generation = RetryUtil.execute(
                     lambda: GeminiService.generate_svg(
                         concept,
-                        feedback
+                        feedback,
+                        reviewer_feedback=reviewer_feedback
                     ),
                     retries
                 )
@@ -89,10 +90,19 @@ class DiagramService:
                 break
             svg = generation.svg
             validation = ValidationService.validate_svg(svg)
+            if generation.finish_reason == "MAX_TOKENS":
+                validity = validation.checks[0]
+                reason = "Gemini reached its token limit before completing the response"
+                if not validity.passed:
+                    reason = f"{reason}: {validity.message}"
+                validity.passed = False
+                validity.message = reason
+                validation.passed = False
             attempts.append(
                 GenerationAttemptModel(
                     attempt_number=index + 1,
                     reported_model_name=generation.model_name,
+                    finish_reason=generation.finish_reason,
                     token_usage=generation.token_usage,
                     validation=validation,
                     estimated_cost_usd=CostUtil.calculate_cost(
@@ -104,6 +114,8 @@ class DiagramService:
             if validation.passed:
                 break
             feedback = validation.get_failure_feedback()
+            if generation.finish_reason == "MAX_TOKENS":
+                feedback += "\nUse fewer shapes and labels so the SVG fits."
         if not validation.passed and error_message is None:
             error_message = "SVG validation failed after allowed attempts"
             error_status = 502
@@ -180,6 +192,7 @@ class DiagramService:
             result.retries.total_retries
         )
         for attempt in result.attempts:
+            logger.info("Attempt %s | Finish reason: %s", attempt.attempt_number, attempt.finish_reason)
             for check in attempt.validation.checks:
                 logger.info(
                     "Attempt %s | %s: %s | %s",

@@ -33,6 +33,29 @@ function ValidationChecks({ result }) {
     );
 }
 
+function TokenUsage({ usage }) {
+    if (!usage) return null;
+    const counts = [
+        ['Input', usage.input_tokens],
+        ['Output', usage.output_tokens],
+        ['Thinking', usage.thinking_tokens],
+    ].filter(([, count]) => count != null);
+    const label = usage.total_tokens == null
+        ? 'Token usage'
+        : `${usage.total_tokens.toLocaleString()} tokens`;
+    if (!counts.length) {
+        return usage.total_tokens == null ? null : <span className="muted">{label}</span>;
+    }
+    return (
+        <details className="check-details">
+            <summary>{label}</summary>
+            <ul>
+                {counts.map(([name, count]) => <li key={name}>{name} {count.toLocaleString()}</li>)}
+            </ul>
+        </details>
+    );
+}
+
 export default function DiagramRow({ diagram, generation, review, onReview, onGenerate }) {
     const status = diagram.passed ? 'Passed' : diagram.validation ? 'Failed' : 'Not generated';
     const tone = { Passed: 'passed', Failed: 'failed', 'Not generated': 'pending' }[status];
@@ -57,6 +80,7 @@ export default function DiagramRow({ diagram, generation, review, onReview, onGe
                 <div className="generation-cell">
                     <strong className="cost">{formatCost(result.estimated_cost_usd)}</strong>
                     <span className="muted">Estimated USD</span>
+                    <TokenUsage usage={result.token_usage} />
                     <p className="retry-count">
                         <strong>{result.retries?.total_retries ?? '—'}</strong> retries
                         {result.retries && (

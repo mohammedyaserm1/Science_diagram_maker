@@ -90,6 +90,26 @@ def test_validation_retry():
     assert "title_and_labels" in second_call.args[1]
 
 
+def test_truncation_is_recorded_and_corrected_with_reviewer_feedback():
+    truncated = create_generation(VALID_SVG)
+    truncated.finish_reason = "MAX_TOKENS"
+    corrected = create_generation(VALID_SVG)
+    corrected.finish_reason = "STOP"
+    notes = "Clarify where the radius ends."
+    with patch(
+        "service.diagram_service.GeminiService.generate_svg",
+        side_effect=[truncated, corrected]
+    ) as generate:
+        result = DiagramService.generate_diagram(2, notes)
+    assert result.passed
+    assert [attempt.finish_reason for attempt in result.attempts] == ["MAX_TOKENS", "STOP"]
+    assert len(result.attempts[0].validation.checks) == 5
+    assert not result.attempts[0].validation.passed
+    assert "token limit" in generate.call_args_list[1].args[1]
+    assert all(call.kwargs["reviewer_feedback"] == notes for call in generate.call_args_list)
+    assert result.retries.validation_retries == 1
+
+
 def test_validation_retry_exhausted():
     with patch(
         "service.diagram_service.GeminiService.generate_svg",

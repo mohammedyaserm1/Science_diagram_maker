@@ -1,4 +1,8 @@
-from fastapi import HTTPException
+from typing import Annotated
+
+from fastapi import Body, HTTPException
+
+from config.app_config import AppConfig
 from model.diagram_model import DiagramResultModel
 from service.concept_service import ConceptNotFoundError
 from service.diagram_service import DiagramService
@@ -25,9 +29,15 @@ class DiagramController:
         return result
 
     @staticmethod
-    def io_generate_diagram(concept_id: int) -> DiagramResultModel:
+    def io_generate_diagram(
+        concept_id: int,
+        reviewer_feedback: Annotated[
+            str,
+            Body(media_type="text/plain", max_length=AppConfig.MAX_REVIEWER_FEEDBACK_LENGTH)
+        ] = ""
+    ) -> DiagramResultModel:
         try:
-            result = DiagramService.generate_diagram(concept_id)
+            result = DiagramService.generate_diagram(concept_id, reviewer_feedback)
         except ConceptNotFoundError as error:
             raise HTTPException(status_code=404, detail=str(error)) from error
         if not result.passed:

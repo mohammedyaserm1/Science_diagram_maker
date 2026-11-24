@@ -20,6 +20,7 @@ class GenerationResultModel(BaseModel):
     model_name: str | None
     svg: str
     token_usage: TokenUsageModel
+    finish_reason: str | None = None
 
 
 class ValidationCheckModel(BaseModel):
@@ -52,6 +53,7 @@ class GenerationAttemptModel(BaseModel):
     validation: ValidationResultModel
     estimated_cost_usd: float | None
     reported_model_name: str | None = None
+    finish_reason: str | None = None
 
 
 class DiagramResultModel(BaseModel):

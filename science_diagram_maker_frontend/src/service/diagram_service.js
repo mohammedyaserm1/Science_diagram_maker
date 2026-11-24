@@ -4,6 +4,7 @@ import savedResults from '../../../science_diagram_maker_backend/data/results.js
 import { canPreview } from '../util/diagram_util';
 
 const SESSION_KEY = 'science_diagram_maker_live_v1';
+const MAX_REVIEWER_FEEDBACK_LENGTH = 2000;
 const initialDiagrams = concepts.map((concept) =>
     savedResults.find((result) => result.concept.id === concept.id) || { concept },
 );
@@ -37,11 +38,14 @@ export function saveSessionDiagram(result) {
     }
 }
 
-export async function generateDiagram(conceptId) {
+export async function generateDiagram(conceptId, reviewerFeedback = '') {
+    const feedback = Array.from(reviewerFeedback.trim())
+        .slice(0, MAX_REVIEWER_FEEDBACK_LENGTH).join('');
     let response;
     try {
         response = await fetch(`${AppConfig.apiBaseUrl}/diagrams/${conceptId}/generate`, {
             method: 'POST',
+            body: feedback || undefined,
             signal: AbortSignal.timeout(350_000),
         });
     } catch (error) {
