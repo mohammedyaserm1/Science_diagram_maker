@@ -20,3 +20,21 @@ class GenerationResultModel(BaseModel):
     model_name: str
     svg: str
     token_usage: TokenUsageModel
+
+
+class ValidationCheckModel(BaseModel):
+    name: str
+    passed: bool
+    message: str
+
+
+class ValidationResultModel(BaseModel):
+    passed: bool
+    checks: list[ValidationCheckModel]
+
+    def get_failure_feedback(self) -> str:
+        return "\n".join(
+            f"{check.name}: {check.message}"
+            for check in self.checks
+            if not check.passed
+        )
