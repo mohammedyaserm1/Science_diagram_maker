@@ -6,145 +6,7 @@
             "subject": "Maths",
             "description": "In a right-angled triangle, the longest side is called the hypotenuse. The square of the hypotenuse is equal to the sum of the squares of the other two sides: a² + b² = c²."
         },
-        "model_name": "gemini-3.5-flash-lite",
-        "svg": null,
-        "passed": false,
-        "validation": {
-            "passed": false,
-            "checks": [
-                {
-                    "name": "svg_validity",
-                    "passed": true,
-                    "message": "SVG parsed successfully"
-                },
-                {
-                    "name": "viewbox_bounds",
-                    "passed": false,
-                    "message": "text exceeds viewBox: bounds=(-115.20, 8.60, 915.20, 59.00)"
-                },
-                {
-                    "name": "title_and_labels",
-                    "passed": true,
-                    "message": "Title and 9 text labels found"
-                },
-                {
-                    "name": "animation",
-                    "passed": true,
-                    "message": "Found 1 valid SMIL animations"
-                },
-                {
-                    "name": "security",
-                    "passed": true,
-                    "message": "SVG follows the supported safe element and attribute profile"
-                }
-            ]
-        },
-        "token_usage": {
-            "input_tokens": 1503,
-            "output_tokens": 1974,
-            "thinking_tokens": null,
-            "total_tokens": 3477
-        },
-        "retries": {
-            "api_retries": 2,
-            "validation_retries": 1,
-            "total_retries": 3
-        },
-        "estimated_cost_usd": 0.0053859,
-        "attempts": [
-            {
-                "attempt_number": 1,
-                "token_usage": {
-                    "input_tokens": 734,
-                    "output_tokens": 975,
-                    "thinking_tokens": null,
-                    "total_tokens": 1709
-                },
-                "validation": {
-                    "passed": false,
-                    "checks": [
-                        {
-                            "name": "svg_validity",
-                            "passed": true,
-                            "message": "SVG parsed successfully"
-                        },
-                        {
-                            "name": "viewbox_bounds",
-                            "passed": false,
-                            "message": "text exceeds viewBox: bounds=(-41.60, 33.80, 841.60, 77.00)"
-                        },
-                        {
-                            "name": "title_and_labels",
-                            "passed": true,
-                            "message": "Title and 8 text labels found"
-                        },
-                        {
-                            "name": "animation",
-                            "passed": true,
-                            "message": "Found 2 valid SMIL animations"
-                        },
-                        {
-                            "name": "security",
-                            "passed": true,
-                            "message": "SVG follows the supported safe element and attribute profile"
-                        }
-                    ]
-                },
-                "estimated_cost_usd": 0.0026577
-            },
-            {
-                "attempt_number": 2,
-                "token_usage": {
-                    "input_tokens": 769,
-                    "output_tokens": 999,
-                    "thinking_tokens": null,
-                    "total_tokens": 1768
-                },
-                "validation": {
-                    "passed": false,
-                    "checks": [
-                        {
-                            "name": "svg_validity",
-                            "passed": true,
-                            "message": "SVG parsed successfully"
-                        },
-                        {
-                            "name": "viewbox_bounds",
-                            "passed": false,
-                            "message": "text exceeds viewBox: bounds=(-115.20, 8.60, 915.20, 59.00)"
-                        },
-                        {
-                            "name": "title_and_labels",
-                            "passed": true,
-                            "message": "Title and 9 text labels found"
-                        },
-                        {
-                            "name": "animation",
-                            "passed": true,
-                            "message": "Found 1 valid SMIL animations"
-                        },
-                        {
-                            "name": "security",
-                            "passed": true,
-                            "message": "SVG follows the supported safe element and attribute profile"
-                        }
-                    ]
-                },
-                "estimated_cost_usd": 0.0027282
-            }
-        ],
-        "generated_at": "2026-11-24T13:27:31.787659+00:00",
-        "error": "SVG validation failed after allowed attempts",
-        "error_status": null
-    },
-    {
-        "concept": {
-            "id": 2,
-            "name": "Parts of a circle",
-            "subject": "Maths",
-            "description": "A circle has a centre. The radius is the distance from the centre to the edge. The diameter goes across the circle through the centre and is twice the radius. The circumference is the distance around the circle."
-        },
-        "model_name": "gemini-3.5-flash-lite",
+        "model_name": "gemini-3.5-flash",
         "svg": null,
         "passed": false,
         "validation": {
@@ -184,15 +46,76 @@
             "total_tokens": null
         },
         "retries": {
-            "api_retries": 3,
+            "api_retries": 0,
             "validation_retries": 0,
-            "total_retries": 3
+            "total_retries": 0
         },
         "estimated_cost_usd": null,
         "attempts": [],
-        "generated_at": "2026-11-24T13:28:25.802283+00:00",
-        "error": "Gemini API request failed (HTTP 503)",
-        "error_status": null
+        "generated_at": "2026-11-24T14:37:20.540935+00:00",
+        "error": "Gemini timed out (HTTP 504). Try again later.",
+        "error_status": 504,
+        "requested_model_name": "gemini-3.5-flash",
+        "reported_model_name": null
+    },
+    {
+        "concept": {
+            "id": 2,
+            "name": "Parts of a circle",
+            "subject": "Maths",
+            "description": "A circle has a centre. The radius is the distance from the centre to the edge. The diameter goes across the circle through the centre and is twice the radius. The circumference is the distance around the circle."
+        },
+        "model_name": "gemini-3.5-flash",
+        "svg": null,
+        "passed": false,
+        "validation": {
+            "passed": false,
+            "checks": [
+                {
+                    "name": "svg_validity",
+                    "passed": false,
+                    "message": "No SVG generated"
+                },
+                {
+                    "name": "viewbox_bounds",
+                    "passed": false,
+                    "message": "No SVG generated"
+                },
+                {
+                    "name": "title_and_labels",
+                    "passed": false,
+                    "message": "No SVG generated"
+                },
+                {
+                    "name": "animation",
+                    "passed": false,
+                    "message": "No SVG generated"
+                },
+                {
+                    "name": "security",
+                    "passed": false,
+                    "message": "No SVG generated"
+                }
+            ]
+        },
+        "token_usage": {
+            "input_tokens": null,
+            "output_tokens": null,
+            "thinking_tokens": null,
+            "total_tokens": null
+        },
+        "retries": {
+            "api_retries": 0,
+            "validation_retries": 0,
+            "total_retries": 0
+        },
+        "estimated_cost_usd": null,
+        "attempts": [],
+        "generated_at": "2026-11-24T14:38:20.815609+00:00",
+        "error": "The backend could not reach Gemini. Try again later.",
+        "error_status": 502,
+        "requested_model_name": "gemini-3.5-flash",
+        "reported_model_name": null
     },
     {
         "concept": {

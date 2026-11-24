@@ -39,7 +39,7 @@ class DiagramService:
         svg = None
         error_message = None
         error_status = None
-        model_name = AppConfig.GEMINI_MODEL
+        requested_model_name = AppConfig.GEMINI_MODEL
         feedback = ""
         validation = DiagramService.create_failed_validation(
             "No SVG generated"
@@ -87,12 +87,12 @@ class DiagramService:
                 error_status = 500
                 error_message = "Diagram generation failed"
                 break
-            model_name = generation.model_name
             svg = generation.svg
             validation = ValidationService.validate_svg(svg)
             attempts.append(
                 GenerationAttemptModel(
                     attempt_number=index + 1,
+                    reported_model_name=generation.model_name,
                     token_usage=generation.token_usage,
                     validation=validation,
                     estimated_cost_usd=CostUtil.calculate_cost(
@@ -107,9 +107,12 @@ class DiagramService:
         if not validation.passed and error_message is None:
             error_message = "SVG validation failed after allowed attempts"
             error_status = 502
+        reported_model_name = attempts[-1].reported_model_name if attempts else None
         result = DiagramResultModel(
             concept=concept,
-            model_name=model_name,
+            model_name=reported_model_name or requested_model_name,
+            requested_model_name=requested_model_name,
+            reported_model_name=reported_model_name,
             svg=svg if validation.passed else None,
             passed=validation.passed,
             validation=validation,
@@ -157,13 +160,14 @@ class DiagramService:
     @staticmethod
     def log_result(result: DiagramResultModel):
         logger.info(
-            "Concept: %s | Model: %s | Passed: %s | "
+            "Concept: %s | Requested model: %s | Reported model: %s | Passed: %s | "
             "Input tokens: %s | Output tokens: %s | "
             "Thinking tokens: %s | Total tokens: %s | Estimated cost USD: %s | "
             "Generated at: %s | "
             "API retries: %s | Validation retries: %s | Total retries: %s",
             result.concept.name,
-            result.model_name,
+            result.requested_model_name,
+            result.reported_model_name,
             result.passed,
             result.token_usage.input_tokens,
             result.token_usage.output_tokens,

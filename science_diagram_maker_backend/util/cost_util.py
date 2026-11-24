@@ -5,9 +5,11 @@ from model.diagram_model import TokenUsageModel
 class CostUtil:
     @staticmethod
     def calculate_cost(
-        model_name: str,
+        model_name: str | None,
         token_usage: TokenUsageModel
     ) -> float | None:
+        if not model_name:
+            return None
         pricing = PricingConfig.MODEL_PRICING.get(
             model_name.removeprefix("models/")
         )

@@ -16,17 +16,18 @@ def test_cost_calculation():
     assert cost == pytest.approx(2.80)
 
 
-def test_thinking_token_cost():
+@pytest.mark.parametrize(
+    ("model", "expected_cost"),
+    [("gemini-3.5-flash-lite", 5.30), ("gemini-3.5-flash", 19.50)]
+)
+def test_thinking_token_cost(model, expected_cost):
     usage = TokenUsageModel(
         input_tokens=1000000,
         output_tokens=1000000,
         thinking_tokens=1000000
     )
-    cost = CostUtil.calculate_cost(
-        "gemini-3.5-flash-lite",
-        usage
-    )
-    assert cost == pytest.approx(5.30)
+    cost = CostUtil.calculate_cost(model, usage)
+    assert cost == pytest.approx(expected_cost)
 
 
 def test_unknown_model_cost():

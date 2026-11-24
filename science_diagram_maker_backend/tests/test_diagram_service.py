@@ -1,4 +1,5 @@
 import pytest
+from config.app_config import AppConfig
 from unittest.mock import patch
 from google.genai.errors import APIError
 from model.diagram_model import (
@@ -53,6 +54,20 @@ def test_successful_generation():
     assert len(result.attempts) == 1
     assert result.retries.total_retries == 0
     assert generate.call_count == 1
+
+
+@pytest.mark.parametrize("reported_model", ["gemini-3.6-flash", None])
+def test_requested_model_does_not_supply_missing_pricing(monkeypatch, reported_model):
+    monkeypatch.setattr(AppConfig, "GEMINI_MODEL", "gemini-3.5-flash")
+    generation = create_generation(VALID_SVG)
+    generation.model_name = reported_model
+    with patch("service.diagram_service.GeminiService.generate_svg", return_value=generation):
+        result = DiagramService.generate_diagram(2)
+    assert result.passed
+    assert result.requested_model_name == "gemini-3.5-flash"
+    assert result.reported_model_name == reported_model
+    assert result.attempts[0].reported_model_name == reported_model
+    assert result.estimated_cost_usd is None
 
 
 def test_validation_retry():

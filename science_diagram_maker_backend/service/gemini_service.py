@@ -44,7 +44,7 @@ class GeminiService:
         usage = response.usage_metadata
         return GenerationResultModel(
             concept_id=concept.id,
-            model_name=response.model_version or AppConfig.GEMINI_MODEL,
+            model_name=response.model_version or None,
             svg=svg,
             token_usage=TokenUsageModel(
                 input_tokens=usage.prompt_token_count if usage else None,

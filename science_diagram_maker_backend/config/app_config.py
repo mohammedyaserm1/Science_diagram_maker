@@ -9,7 +9,7 @@ load_dotenv(BASE_DIR / ".env")
 
 class AppConfig:
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-    GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
+    GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
     FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
     DATA_DIR = BASE_DIR / "data"
     CONCEPTS_FILE = DATA_DIR / "concepts.json"

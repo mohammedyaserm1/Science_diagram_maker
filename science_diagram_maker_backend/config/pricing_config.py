@@ -1,6 +1,7 @@
 class PricingConfig:
     TOKENS_PER_MILLION = 1000000
 
+    # Standard paid-tier USD rates used for estimates, including on free-tier runs.
     MODEL_PRICING = {
         "gemini-3.5-flash-lite": {
             "input": 0.30,

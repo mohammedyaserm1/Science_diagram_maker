@@ -31,7 +31,7 @@ Open the local Vite URL at `http://localhost:5173`. The backend exposes Swagger 
 | Variable | Location | Purpose |
 | --- | --- | --- |
 | `GEMINI_API_KEY` | Backend | Server-side Gemini key. Required for generation. |
-| `GEMINI_MODEL` | Backend | Defaults to `gemini-3.5-flash-lite`. Google also lists free access for `gemini-3.5-flash` and `gemini-3.1-flash-lite`. |
+| `GEMINI_MODEL` | Backend | Defaults to `gemini-3.5-flash`, the alternative named in the Udhi Technologies assessment. |
 | `FRONTEND_URL` | Backend | Allowed browser origin, defaults to `http://localhost:5173`. Use the exact production origin without a trailing slash. |
 | `VITE_API_BASE_URL` | Frontend | Public API base, including `/api`. Set it before building the frontend. |
 
@@ -78,20 +78,30 @@ The estimate multiplies input, output and reported thinking tokens by Gemini’s
 
 ## Saved results
 
-| Concept | Validation | Estimated USD | API retries | Validation retries | Total retries |
-| --- | --- | ---: | ---: | ---: | ---: |
-| Pythagoras' theorem | Failed | $0.00538590 | 2 | 1 | 3 |
-| Parts of a circle | Failed | Unavailable | 3 | 0 | 3 |
-| Series circuit | Passed | $0.00342040 | 0 | 0 | 0 |
-| Photosynthesis | Passed | $0.00339770 | 0 | 0 | 0 |
-| States of matter | Passed | $0.01112190 | 0 | 0 | 0 |
+| Concept | Saved model status | Validation | Tokens (input / output / thinking / total) | Estimated USD | Retries (API / validation / total) |
+| --- | --- | --- | --- | ---: | --- |
+| Pythagoras' theorem | Requested 3.5 Flash | Never reached after HTTP 504 | — / — / — / — | — | 0 / 0 / 0 |
+| Parts of a circle | Requested 3.5 Flash | Never reached after connection failure | — / — / — / — | — | 0 / 0 / 0 |
+| Series circuit | 3.5 Flash-Lite | Passed | 718 / 1,282 / — / 2,000 | $0.00342040 | 0 / 0 / 0 |
+| Photosynthesis | 3.5 Flash-Lite | Passed | 809 / 1,262 / — / 2,071 | $0.00339770 | 0 / 0 / 0 |
+| States of matter | 3.5 Flash-Lite | Passed | 823 / 4,350 / — / 5,173 | $0.01112190 | 0 / 0 / 0 |
+
+A dash indicates unavailable token or pricing data. New results record the requested model and the model reported by Gemini separately. The cost estimate uses the reported model and is unavailable when that model or its price is unknown. The three saved SVGs animate in the browser. Photosynthesis correctly labels the inputs, products and light. States of matter shows the relative spacing and motion of particles. The saved Series circuit still needs the scientific corrections described below.
 
 ### What failed and what changed
 
-- The initial Pythagoras output exceeded the text bounds. The original width estimate of `1.1 × font size × character count` was conservatively high. The project now estimates at `0.75 × font size × character count` for its required monospace font and asks Gemini for short labels, smaller type and margins. A later attempt put a rectangle outside the canvas, so the prompt now asks for a simpler 3–4–5 diagram and explicit rectangle bounds checks.
-- Parts of a circle and States of matter initially exhausted retries on Gemini 503 errors. States of matter subsequently passed all five checks on Gemini 3.5 Flash-Lite. Later requests for the two maths concepts returned HTTP 503 or 504 on the default and alternative models. The saved file retains the original failure records for those two concepts.
+- The initial Flash-Lite Pythagoras output exceeded the text bounds. The original width estimate of `1.1 × font size × character count` was conservatively high. The project now estimates at `0.75 × font size × character count` for its required monospace font and asks Gemini for short labels, smaller type and margins. A later attempt put a rectangle outside the canvas, so the prompt now asks for a simpler 3–4–5 diagram and explicit rectangle bounds checks. The original saved failure recorded 1,503 input and 1,974 output tokens, a $0.00538590 paid-tier estimate, and two API retries plus one validation retry.
+- Parts of a circle and States of matter initially exhausted all three API retries on Gemini 503 errors. States of matter subsequently passed all five checks on Gemini 3.5 Flash-Lite. The original saved records, including the full validation feedback and failure metadata, are available in the first dashboard commit. [Historical results](https://github.com/mohammedyaserm1/Science_diagram_maker/blob/2700ace/science_diagram_maker_backend/data/results.json)
 - The existing batch workflow recovered saved progress after an interruption by skipping concept IDs already written to disk. The tests verify resumption from a partial set of results using temporary files. The single-concept command retries saved failures explicitly.
-- Automated checks evaluate the supported SVG subset. They cannot establish scientific accuracy, rule out label overlap, or measure actual font rendering. The series circuit passed automated validation with a battery symbol labelled “Cell” and omitted voltage sharing. Its replacement prompt now specifies a single pair of plates and a voltage-sharing caption. Gemini returned 503s on that regeneration, so the saved preview still has the original issue.
+- Automated checks evaluate the supported SVG subset. They cannot establish scientific accuracy, rule out label overlap, or measure actual font rendering. The saved series circuit labels a two-cell symbol “Cell”, omits voltage sharing, and lets some current markers leave the wire. Its replacement prompt specifies a single pair of plates, resistor drops that sum to the cell voltage, and sequential highlights on the loop.
+
+On 24 November 2026, Gemini 3.5 Flash-Lite returned HTTP 503 on the initial call and all three retries for Pythagoras' theorem, Parts of a circle and Series circuit. Those requests stopped before SVG validation. I switched to Gemini 3.5 Flash because the Udhi Technologies assessment recommends it as the free-tier alternative. The existing free-tier key retrieved its model metadata with HTTP 200 and listed `generateContent` among the supported actions.
+
+### Gemini 3.5 Flash follow-up
+
+I requested `gemini-3.5-flash` for concepts 1, 2 and 3 in order. Pythagoras returned HTTP 504 and Parts of a circle failed at the connection layer. Neither response supplied tokens or an SVG. For Series circuit, Gemini returned HTTP 200 and identified its response model as `gemini-3.6-flash`. The response contained malformed SVG with an unclosed XML token, and the one allowed validation retry returned HTTP 504. The run ended after the repeated gateway failures.
+
+The circuit response reported 984 input, 328 output and 7,860 thinking tokens, totaling 9,172. There were zero API retries and one validation retry. The application recorded the cost as unavailable because its pricing configuration has no rate for the reported model. Using Google's standard 3.6 Flash rates through 31 December 2026, the response has a paid-tier equivalent of $0.03144300. The request used the existing free tier. The saved circuit preview is the original Flash-Lite SVG, and the two maths concepts still have no preview to review. [Google Gemini API pricing](https://ai.google.dev/gemini-api/docs/pricing#gemini-3.6-flash)
 
 ## Verify
 

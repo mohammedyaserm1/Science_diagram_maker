@@ -17,7 +17,7 @@ class TokenUsageModel(BaseModel):
 
 class GenerationResultModel(BaseModel):
     concept_id: int
-    model_name: str
+    model_name: str | None
     svg: str
     token_usage: TokenUsageModel
 
@@ -51,6 +51,7 @@ class GenerationAttemptModel(BaseModel):
     token_usage: TokenUsageModel
     validation: ValidationResultModel
     estimated_cost_usd: float | None
+    reported_model_name: str | None = None
 
 
 class DiagramResultModel(BaseModel):
@@ -66,3 +67,5 @@ class DiagramResultModel(BaseModel):
     generated_at: str
     error: str | None = None
     error_status: int | None = None
+    requested_model_name: str | None = None
+    reported_model_name: str | None = None
