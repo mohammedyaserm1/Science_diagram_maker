@@ -1,7 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from config.app_config import AppConfig
+from config.logging_config import LoggingConfig
 from route.health_route import router as health_router
+
+LoggingConfig.configure()
 
 app = FastAPI(
     title="Science Diagram Maker API",

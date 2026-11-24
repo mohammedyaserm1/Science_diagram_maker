@@ -38,3 +38,30 @@ class ValidationResultModel(BaseModel):
             for check in self.checks
             if not check.passed
         )
+
+
+class RetryModel(BaseModel):
+    api_retries: int = 0
+    validation_retries: int = 0
+    total_retries: int = 0
+
+
+class GenerationAttemptModel(BaseModel):
+    attempt_number: int
+    token_usage: TokenUsageModel
+    validation: ValidationResultModel
+    estimated_cost_usd: float | None
+
+
+class DiagramResultModel(BaseModel):
+    concept: ConceptModel
+    model_name: str
+    svg: str | None = None
+    passed: bool
+    validation: ValidationResultModel
+    token_usage: TokenUsageModel
+    retries: RetryModel
+    estimated_cost_usd: float | None
+    attempts: list[GenerationAttemptModel]
+    generated_at: str
+    error: str | None = None

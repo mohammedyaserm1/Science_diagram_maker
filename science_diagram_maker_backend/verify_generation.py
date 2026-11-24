@@ -1,26 +1,28 @@
-import json
-from service.concept_service import ConceptService
-from service.gemini_service import GeminiService
-from service.validation_service import ValidationService
+from config.logging_config import LoggingConfig
+from service.diagram_service import DiagramService
 
 
 def main():
-    concept = ConceptService.get_concept_by_id(2)
-    print(f"Generating diagram: {concept.name}")
-    result = GeminiService.generate_svg(concept)
+    LoggingConfig.configure()
+    result = DiagramService.generate_diagram(2)
+    print("\nGeneration summary")
+    print("-" * 50)
+    print(f"Concept: {result.concept.name}")
     print(f"Model: {result.model_name}")
-    print(f"SVG length: {len(result.svg)} characters")
-    print("Token usage:")
-    print(json.dumps(result.token_usage.model_dump(), indent=4))
-    validation = ValidationService.validate_svg(result.svg)
-    print("\nValidation results:")
-    for check in validation.checks:
+    print(f"Passed: {result.passed}")
+    print(f"Input tokens: {result.token_usage.input_tokens}")
+    print(f"Output tokens: {result.token_usage.output_tokens}")
+    print(f"Thinking tokens: {result.token_usage.thinking_tokens}")
+    print(f"Estimated cost USD: {result.estimated_cost_usd}")
+    print(f"API retries: {result.retries.api_retries}")
+    print(f"Validation retries: {result.retries.validation_retries}")
+    print(f"Total retries: {result.retries.total_retries}")
+    print("\nFinal validation results:")
+    for check in result.validation.checks:
         status = "PASS" if check.passed else "FAIL"
         print(f"[{status}] {check.name}: {check.message}")
-    print(f"\nOverall result: {'PASS' if validation.passed else 'FAIL'}")
-    if not validation.passed:
-        print("\nValidation feedback:")
-        print(validation.get_failure_feedback())
+    if result.error:
+        print(f"\nError: {result.error}")
 
 
 if __name__ == "__main__":
